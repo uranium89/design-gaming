@@ -22,9 +22,31 @@ export function App() {
   const [currentScore, setCurrentScore] = useState<ScoreBreakdown | null>(null);
 
   const handleOpenScore = () => {
-    // Calculate current score using live and accumulated stats
+    const nodes = useGraphStore.getState().nodes;
+    const edges = useGraphStore.getState().edges;
+
+    // Architecture validation
+    const hasDirectClientToStorage = edges.some((e) => {
+      const srcNode = nodes.find((n) => n.id === e.source);
+      const tgtNode = nodes.find((n) => n.id === e.target);
+      return (
+        (srcNode?.data.name === 'User Traffic' || srcNode?.data.category === 'routing') &&
+        tgtNode?.data.category === 'storage'
+      );
+    });
+
+    const hasComputeLayer = nodes.some(
+      (n) => n.data.category === 'compute' && edges.some((e) => e.target === n.id)
+    );
+
+    const hasStorageLayer = nodes.some(
+      (n) => n.data.category === 'storage' && edges.some((e) => e.target === n.id)
+    );
+
     const totalReq = stats?.totalRequestsGenerated || (simulation.isRunning ? 1000 : 500);
-    const successReq = stats?.totalRequestsSucceeded || (simulation.isRunning ? Math.round(totalReq * (1 - metrics.errorRate)) : 500);
+    const successReq = hasDirectClientToStorage
+      ? 0
+      : stats?.totalRequestsSucceeded || (simulation.isRunning ? Math.round(totalReq * (1 - metrics.errorRate)) : 500);
 
     const score = calculateScore({
       totalRequests: totalReq,
@@ -36,7 +58,10 @@ export function App() {
       incidentUptimeSeconds: stats?.incidentUptimeSeconds ?? 15,
       totalIncidentSeconds: stats?.totalIncidentSeconds ?? 15,
       slaTarget: LEVEL_01.slaTarget,
-      dataLossCount: 0,
+      hasDirectClientToStorage,
+      hasComputeLayer,
+      hasStorageLayer,
+      writeRatio: 0.20,
     });
 
     setCurrentScore(score);

@@ -10,6 +10,10 @@ export interface NodeSimUpdate {
 export interface TickResult {
   metrics: LiveMetrics;
   nodeUpdates: Record<string, NodeSimUpdate>;
+  architectureErrors?: string[];
+  hasComputeLayer?: boolean;
+  hasStorageLayer?: boolean;
+  hasDirectClientToStorage?: boolean;
 }
 
 export function calculateSimulationTick(
@@ -20,6 +24,7 @@ export function calculateSimulationTick(
 ): TickResult {
   const nodeUpdates: Record<string, NodeSimUpdate> = {};
   const incomingRpsMap: Record<string, number> = {};
+  const architectureErrors: string[] = [];
 
   // Initialize
   nodes.forEach((n) => {
@@ -28,7 +33,7 @@ export function calculateSimulationTick(
 
   // Identify traffic source nodes (e.g. User Traffic)
   const sourceNodes = nodes.filter(
-    (n) => n.data.name === 'User Traffic' || n.data.category === 'routing' && n.data.icon === 'Users'
+    (n) => n.data.name === 'User Traffic' || (n.data.category === 'routing' && n.data.icon === 'Users')
   );
 
   sourceNodes.forEach((s) => {
@@ -49,6 +54,7 @@ export function calculateSimulationTick(
   let totalSuccessfulRps = 0;
   let totalDroppedRps = 0;
   let cumulativeLatencyMs = 0;
+  let hasDirectClientToStorage = false;
 
   while (queue.length > 0) {
     const currentId = queue.shift()!;
@@ -66,7 +72,23 @@ export function calculateSimulationTick(
     let rpsOut = rpsIn;
     let nodeLatency = addedLatency;
 
-    if (currentNode.data.name !== 'User Traffic') {
+    // Check Architecture Rule: Cannot connect User Traffic / Routing directly to Storage (Database/Cache)
+    const incomingSources = edges.filter((e) => e.target === currentId).map((e) => e.source);
+    const isDirectClientOrRoutingToStorage =
+      currentNode.data.category === 'storage' &&
+      incomingSources.some((srcId) => {
+        const srcNode = nodes.find((n) => n.id === srcId);
+        return srcNode?.data.name === 'User Traffic' || srcNode?.data.category === 'routing';
+      });
+
+    if (isDirectClientOrRoutingToStorage) {
+      hasDirectClientToStorage = true;
+      status = 'crashed';
+      nodeLatency = 500; // Connection refused / timeout
+      totalDroppedRps += rpsIn;
+      rpsOut = 0;
+      cumulativeLatencyMs += nodeLatency;
+    } else if (currentNode.data.name !== 'User Traffic') {
       const ratio = capacity > 0 ? rpsIn / capacity : 1.0;
 
       if (ratio < 0.8) {
@@ -94,7 +116,6 @@ export function calculateSimulationTick(
     // Forward to downstream targets
     const targets = adjacency[currentId] || [];
     if (targets.length > 0) {
-      // If load balancer: divide traffic equally
       const isLoadBalancer = currentNode.data.name.toLowerCase().includes('load balancer');
       const sharePerTarget = isLoadBalancer ? rpsOut / targets.length : rpsOut;
 
@@ -104,10 +125,32 @@ export function calculateSimulationTick(
           queue.push(targetId);
         }
       });
-    } else if (currentNode.data.name !== 'User Traffic') {
+    } else if (currentNode.data.name !== 'User Traffic' && !isDirectClientOrRoutingToStorage) {
       // Leaf node in architecture flow
       totalSuccessfulRps += rpsOut;
     }
+  }
+
+  // Check Layer Presence
+  const hasComputeLayer = nodes.some(
+    (n) => n.data.category === 'compute' && (incomingRpsMap[n.id] || 0) > 0
+  );
+  const hasStorageLayer = nodes.some(
+    (n) => n.data.category === 'storage' && (incomingRpsMap[n.id] || 0) > 0
+  );
+
+  if (hasDirectClientToStorage) {
+    architectureErrors.push(
+      'LỖI BẢO MẬT & KIẾN TRÚC: Bạn đang nối Client trực tiếp vào Database! Database không thể chạy mã nguồn web hay nhận raw HTTP request trực tiếp.'
+    );
+  } else if (!hasComputeLayer && nodes.length > 1) {
+    architectureErrors.push(
+      'THIẾU TẦNG XỬ LÝ (COMPUTE): Không có App Server để chạy backend web và xử lý đơn hàng!'
+    );
+  } else if (hasComputeLayer && !hasStorageLayer) {
+    architectureErrors.push(
+      'MẤT DỮ LIỆU (DATA LOSS): Hệ thống thiếu Database để lưu trữ 20% đơn hàng đặt bánh!'
+    );
   }
 
   // Calculate total monthly cost
@@ -121,12 +164,16 @@ export function calculateSimulationTick(
   return {
     metrics: {
       throughputRps: Math.round(totalSuccessfulRps),
-      p95LatencyMs: Math.round(cumulativeLatencyMs * 1.15), // estimate p95 from mean
+      p95LatencyMs: Math.round(cumulativeLatencyMs * 1.15),
       costPerMonth: totalCost,
       budgetLimit,
       errorRate: Math.round(errorRate * 100) / 100,
       activeRequests: Math.round(trafficRps * (cumulativeLatencyMs / 1000)),
     },
     nodeUpdates,
+    architectureErrors,
+    hasComputeLayer,
+    hasStorageLayer,
+    hasDirectClientToStorage,
   };
 }

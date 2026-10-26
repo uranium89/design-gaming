@@ -11,6 +11,10 @@ export interface ScoringInput {
   uptimePercent?: number;
   slaTarget?: number;
   dbMasterCrashed?: boolean;
+  hasDirectClientToStorage?: boolean;
+  hasComputeLayer?: boolean;
+  hasStorageLayer?: boolean;
+  writeRatio?: number;
 }
 
 export interface ScoreBreakdown {
@@ -37,9 +41,47 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
     dataLossCount = 0,
     slaTarget = 99.0,
     dbMasterCrashed = false,
+    hasDirectClientToStorage = false,
+    hasComputeLayer = true,
+    hasStorageLayer = true,
+    writeRatio = 0.20,
   } = input;
 
   const feedback: string[] = [];
+
+  // Critical Architecture Violation 1: Direct Client to Storage without App Server
+  if (hasDirectClientToStorage) {
+    feedback.push(
+      '🚨 LỖI BẢO MẬT & KIẾN TRÚC: Kết nối trực tiếp Client tới Database! Database không thể nhận raw HTTP request trực tiếp qua Internet mà không qua App Server.'
+    );
+    return {
+      throughputScore: 0,
+      latencyScore: 0,
+      costScore: 0,
+      reliabilityScore: 0,
+      penalties: 500,
+      totalScore: 0,
+      stars: 0,
+      feedback,
+    };
+  }
+
+  // Critical Architecture Violation 2: Missing Compute Layer
+  if (!hasComputeLayer) {
+    feedback.push(
+      '🚨 THIẾU TẦNG XỬ LÝ (COMPUTE): Không có App Server để chạy backend web và xử lý đơn hàng!'
+    );
+    return {
+      throughputScore: 0,
+      latencyScore: 0,
+      costScore: 0,
+      reliabilityScore: 0,
+      penalties: 500,
+      totalScore: 0,
+      stars: 0,
+      feedback,
+    };
+  }
 
   // 1. Throughput Score (Max: 350)
   let throughputScore = 0;
@@ -98,6 +140,17 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
 
   // 5. Penalties
   let penalties = 0;
+  let effectiveDataLoss = dataLossCount;
+
+  // Missing Database while having Write requests causes Data Loss penalty
+  if (!hasStorageLayer && writeRatio > 0) {
+    effectiveDataLoss += 1;
+    penalties += 150;
+    feedback.push(
+      `⚠️ MẤT DỮ LIỆU (DATA LOSS): Thiếu Database để lưu trữ ${Math.round(writeRatio * 100)}% đơn đặt bánh online! Trừ 150 điểm.`
+    );
+  }
+
   if (dataLossCount > 0) {
     const penalty = dataLossCount * 100;
     penalties += penalty;
@@ -124,13 +177,13 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
   let stars: 0 | 1 | 2 | 3 = 0;
   const isOverBudgetHard = actualCost > 1.2 * budgetMax;
 
-  if (isOverBudgetHard || totalScore < 500) {
+  if (isOverBudgetHard || totalScore < 500 || effectiveDataLoss > 0 && totalScore < 700) {
     stars = 0;
   } else if (
     totalScore >= 850 &&
     computedUptime >= slaTarget &&
     actualCost <= 0.75 * budgetMax &&
-    dataLossCount === 0
+    effectiveDataLoss === 0
   ) {
     stars = 3;
   } else if (totalScore >= 700 && computedUptime >= 95.0 && actualCost <= budgetMax) {

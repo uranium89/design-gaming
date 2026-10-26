@@ -97,4 +97,63 @@ describe('Scoring Engine (GDD Section 3.2)', () => {
     expect(result.penalties).toBe(430);
     expect(result.stars).toBe(0);
   });
+
+  it('fails with 0 stars and security penalty when Client directly connects to DB', () => {
+    const input: ScoringInput = {
+      totalRequests: 1000,
+      successfulRequests: 0,
+      p95LatencyMs: 500,
+      targetLatencyMs: 200,
+      actualCost: 10,
+      budgetMax: 35,
+      incidentUptimeSeconds: 0,
+      totalIncidentSeconds: 15,
+      hasDirectClientToStorage: true,
+    };
+
+    const result = calculateScore(input);
+    expect(result.stars).toBe(0);
+    expect(result.totalScore).toBe(0);
+    expect(result.feedback.some((f) => f.includes('LỖI BẢO MẬT & KIẾN TRÚC'))).toBe(true);
+  });
+
+  it('fails with 0 stars when compute layer is completely missing', () => {
+    const input: ScoringInput = {
+      totalRequests: 1000,
+      successfulRequests: 1000,
+      p95LatencyMs: 30,
+      targetLatencyMs: 200,
+      actualCost: 10,
+      budgetMax: 35,
+      incidentUptimeSeconds: 15,
+      totalIncidentSeconds: 15,
+      hasComputeLayer: false,
+    };
+
+    const result = calculateScore(input);
+    expect(result.stars).toBe(0);
+    expect(result.totalScore).toBe(0);
+    expect(result.feedback.some((f) => f.includes('THIẾU TẦNG XỬ LÝ'))).toBe(true);
+  });
+
+  it('penalizes data loss when database is missing for write operations', () => {
+    const input: ScoringInput = {
+      totalRequests: 1000,
+      successfulRequests: 1000,
+      p95LatencyMs: 35,
+      targetLatencyMs: 200,
+      actualCost: 20,
+      budgetMax: 35,
+      incidentUptimeSeconds: 15,
+      totalIncidentSeconds: 15,
+      hasComputeLayer: true,
+      hasStorageLayer: false,
+      writeRatio: 0.20,
+    };
+
+    const result = calculateScore(input);
+    expect(result.penalties).toBeGreaterThanOrEqual(150);
+    expect(result.stars).toBeLessThan(3); // Cannot get 3 stars with data loss!
+    expect(result.feedback.some((f) => f.includes('MẤT DỮ LIỆU'))).toBe(true);
+  });
 });
