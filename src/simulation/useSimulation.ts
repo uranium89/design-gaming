@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useGraphStore } from '../state/graphStore';
-import { LiveMetrics, SimulationState } from '../types';
+import { LiveMetrics, SimulationState, SimulationStats } from '../types';
 import { TickResult } from './engineMath';
 
 const DEFAULT_METRICS: LiveMetrics = {
@@ -12,6 +12,16 @@ const DEFAULT_METRICS: LiveMetrics = {
   activeRequests: 0,
 };
 
+const DEFAULT_STATS: SimulationStats = {
+  elapsedSeconds: 0,
+  isSpikeActive: false,
+  totalRequestsGenerated: 0,
+  totalRequestsSucceeded: 0,
+  incidentUptimeSeconds: 0,
+  totalIncidentSeconds: 0,
+  maxP95Observed: 0,
+};
+
 export function useSimulation() {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -20,6 +30,7 @@ export function useSimulation() {
   const workerRef = useRef<Worker | null>(null);
 
   const [metrics, setMetrics] = useState<LiveMetrics>(DEFAULT_METRICS);
+  const [stats, setStats] = useState<SimulationStats>(DEFAULT_STATS);
   const [simulation, setSimulation] = useState<SimulationState>({
     isRunning: false,
     speed: 1,
@@ -39,8 +50,19 @@ export function useSimulation() {
         worker.onmessage = (event: MessageEvent) => {
           const { type, payload } = event.data;
           if (type === 'TICK_UPDATE') {
-            const { metrics: newMetrics, nodeUpdates } = payload as TickResult;
+            const { metrics: newMetrics, nodeUpdates, stats: workerStats } = payload as TickResult & {
+              stats?: SimulationStats;
+            };
             setMetrics(newMetrics);
+
+            if (workerStats) {
+              setStats(workerStats);
+              setSimulation((prev) => ({
+                ...prev,
+                elapsedSeconds: workerStats.elapsedSeconds,
+                stats: workerStats,
+              }));
+            }
 
             // Update node visual statuses
             Object.entries(nodeUpdates).forEach(([nodeId, update]) => {
@@ -69,7 +91,13 @@ export function useSimulation() {
     if (workerRef.current) {
       workerRef.current.postMessage({
         type: 'SYNC_GRAPH',
-        payload: { nodes, edges },
+        payload: {
+          nodes,
+          edges,
+          baseRps: 50,
+          spikeRps: 120,
+          budgetLimit: 35,
+        },
       });
     }
   }, [nodes, edges]);
@@ -99,10 +127,33 @@ export function useSimulation() {
     });
   }, [setGraphSimulationSpeed]);
 
+  const triggerSpike = useCallback(() => {
+    workerRef.current?.postMessage({
+      type: 'TRIGGER_SPIKE',
+    });
+  }, []);
+
+  const resetSimulation = useCallback(() => {
+    workerRef.current?.postMessage({
+      type: 'RESET',
+    });
+    setSimulationRunning(false);
+    setSimulation({
+      isRunning: false,
+      speed: 1,
+      elapsedSeconds: 0,
+      stats: DEFAULT_STATS,
+    });
+    setStats(DEFAULT_STATS);
+  }, [setSimulationRunning]);
+
   return {
     metrics,
     simulation,
+    stats,
     toggleSimulation,
     setSpeed,
+    triggerSpike,
+    resetSimulation,
   };
 }

@@ -39,6 +39,7 @@ interface GraphStore {
   setSimulationRunning: (running: boolean) => void;
   setSimulationSpeed: (speed: 1 | 2 | 5) => void;
   resetGraph: () => void;
+  loadArchitecture: (nodes: CustomNodeType[], edges: Edge[]) => void;
 }
 
 const INITIAL_NODES: CustomNodeType[] = [
@@ -174,6 +175,14 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
     set({
       nodes: INITIAL_NODES,
       edges: INITIAL_EDGES,
+      selectedNodeId: null,
+    });
+  },
+
+  loadArchitecture: (nodes, edges) => {
+    set({
+      nodes,
+      edges,
       selectedNodeId: null,
     });
   },

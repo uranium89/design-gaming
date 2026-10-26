@@ -20,8 +20,20 @@ export interface LiveMetrics {
   activeRequests: number;
 }
 
+export interface SimulationStats {
+  elapsedSeconds: number;
+  isSpikeActive: boolean;
+  totalRequestsGenerated: number;
+  totalRequestsSucceeded: number;
+  incidentUptimeSeconds: number;
+  totalIncidentSeconds: number;
+  maxP95Observed: number;
+}
+
 export interface SimulationState {
   isRunning: boolean;
   speed: 1 | 2 | 5;
   elapsedSeconds: number;
+  stats?: SimulationStats;
 }
+

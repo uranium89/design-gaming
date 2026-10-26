@@ -124,3 +124,86 @@
 .metricSuccess { color: var(--color-success); }
 .metricWarning { color: var(--color-warning); }
 .metricNeutral { color: var(--text-main); }
+
+.ghostBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ghostBtn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-subtle);
+}
+
+.evalBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border: 1px solid #4f46e5;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all 0.15s ease;
+}
+
+.evalBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.spikeBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--border-default);
+  background: var(--bg-app);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spikeBtn.spikeActive {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #f87171;
+  animation: pulseSpike 1s infinite alternate;
+}
+
+.clockBadge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  padding: 4px 8px;
+  background: var(--bg-app);
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+@keyframes pulseSpike {
+  from {
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+  }
+}
+

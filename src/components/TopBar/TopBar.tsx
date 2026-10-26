@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Server, Zap } from 'lucide-react';
+import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame } from 'lucide-react';
 import styles from './TopBar.module.css';
 import { LiveMetrics, SimulationState } from '../../types';
 
@@ -8,6 +8,9 @@ interface TopBarProps {
   simulation: SimulationState;
   onToggleSimulation: () => void;
   onSetSpeed: (speed: 1 | 2 | 5) => void;
+  onOpenBriefing?: () => void;
+  onOpenScoring?: () => void;
+  onTriggerSpike?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -15,7 +18,16 @@ export const TopBar: React.FC<TopBarProps> = ({
   simulation,
   onToggleSimulation,
   onSetSpeed,
+  onOpenBriefing,
+  onOpenScoring,
+  onTriggerSpike,
 }) => {
+  const isSpikeActive = simulation.stats?.isSpikeActive || false;
+  const elapsed = simulation.elapsedSeconds || 0;
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
   return (
     <header className={styles.topBar}>
       <div className={styles.leftSection}>
@@ -27,6 +39,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Zap size={12} style={{ display: 'inline', marginRight: 4 }} />
           Level 1: The Bakery
         </div>
+        {onOpenBriefing && (
+          <button
+            className={styles.ghostBtn}
+            onClick={onOpenBriefing}
+            aria-label="Xem đề bài"
+            title="Xem đề bài và ràng buộc mục tiêu"
+          >
+            <BookOpen size={14} /> Đề bài
+          </button>
+        )}
       </div>
 
       <div className={styles.centerSection}>
@@ -57,6 +79,20 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
           ))}
         </div>
+
+        <div className={styles.clockBadge} title="Thời gian mô phỏng">
+          ⏱ {timeFormatted}
+        </div>
+
+        {onTriggerSpike && (
+          <button
+            className={`${styles.spikeBtn} ${isSpikeActive ? styles.spikeActive : ''}`}
+            onClick={onTriggerSpike}
+            title={isSpikeActive ? 'Đang xảy ra bùng nổ lưu lượng!' : 'Kích hoạt thử nghiệm Spike 120 RPS'}
+          >
+            <Flame size={13} /> {isSpikeActive ? 'Spike Đang Diễn Ra!' : 'Thử Spike'}
+          </button>
+        )}
       </div>
 
       <div className={styles.rightSection}>
@@ -87,6 +123,17 @@ export const TopBar: React.FC<TopBarProps> = ({
             ${metrics.budgetLimit} /mo
           </span>
         </div>
+
+        {onOpenScoring && (
+          <button
+            className={styles.evalBtn}
+            onClick={onOpenScoring}
+            aria-label="Chấm điểm kiến trúc"
+            title="Đánh giá kiến trúc và nhận sao"
+          >
+            <Trophy size={14} /> Chấm điểm
+          </button>
+        )}
       </div>
     </header>
   );

@@ -6,17 +6,60 @@ let currentNodes: CustomNodeType[] = [];
 let currentEdges: Edge[] = [];
 let isRunning = false;
 let speed: 1 | 2 | 5 = 1;
-let trafficRps = 50;
+
+let baseTrafficRps = 50;
+let spikeTrafficRps = 120;
+let budgetLimit = 35;
+let manualSpikeActive = false;
+let isSpikeActive = false;
+
+let elapsedSeconds = 0;
+let totalRequestsGenerated = 0;
+let totalRequestsSucceeded = 0;
+let incidentUptimeSeconds = 0;
+let totalIncidentSeconds = 0;
+let maxP95Observed = 0;
+
 let timer: ReturnType<typeof setInterval> | null = null;
 
 function runTick() {
   if (!isRunning || currentNodes.length === 0) return;
 
-  const result = calculateSimulationTick(currentNodes, currentEdges, trafficRps);
+  const dt = 0.1; // 100ms simulated time
+  elapsedSeconds += dt;
+
+  // Auto spike trigger between second 30 and 45 (or manual toggle)
+  const isAutoSpike = elapsedSeconds >= 30 && elapsedSeconds < 45;
+  isSpikeActive = isAutoSpike || manualSpikeActive;
+  const currentTraffic = isSpikeActive ? spikeTrafficRps : baseTrafficRps;
+
+  const result = calculateSimulationTick(currentNodes, currentEdges, currentTraffic, budgetLimit);
+
+  totalRequestsGenerated += currentTraffic * dt;
+  totalRequestsSucceeded += result.metrics.throughputRps * dt;
+  maxP95Observed = Math.max(maxP95Observed, result.metrics.p95LatencyMs);
+
+  if (isSpikeActive) {
+    totalIncidentSeconds += dt;
+    if (result.metrics.errorRate < 0.05) {
+      incidentUptimeSeconds += dt;
+    }
+  }
 
   self.postMessage({
     type: 'TICK_UPDATE',
-    payload: result,
+    payload: {
+      ...result,
+      stats: {
+        elapsedSeconds: Math.floor(elapsedSeconds),
+        isSpikeActive,
+        totalRequestsGenerated: Math.floor(totalRequestsGenerated),
+        totalRequestsSucceeded: Math.floor(totalRequestsSucceeded),
+        incidentUptimeSeconds: Math.round(incidentUptimeSeconds * 10) / 10,
+        totalIncidentSeconds: Math.round(totalIncidentSeconds * 10) / 10,
+        maxP95Observed,
+      },
+    },
   });
 }
 
@@ -33,7 +76,9 @@ self.onmessage = (event: MessageEvent) => {
     case 'SYNC_GRAPH':
       currentNodes = payload.nodes || [];
       currentEdges = payload.edges || [];
-      if (payload.trafficRps !== undefined) trafficRps = payload.trafficRps;
+      if (payload.baseRps !== undefined) baseTrafficRps = payload.baseRps;
+      if (payload.spikeRps !== undefined) spikeTrafficRps = payload.spikeRps;
+      if (payload.budgetLimit !== undefined) budgetLimit = payload.budgetLimit;
       break;
 
     case 'START':
@@ -51,14 +96,21 @@ self.onmessage = (event: MessageEvent) => {
       if (isRunning) startTimer();
       break;
 
-    case 'SET_TRAFFIC':
-      trafficRps = payload.trafficRps || 50;
+    case 'TRIGGER_SPIKE':
+      manualSpikeActive = !manualSpikeActive;
       break;
 
     case 'RESET':
       isRunning = false;
       if (timer) clearInterval(timer);
-      trafficRps = 50;
+      elapsedSeconds = 0;
+      totalRequestsGenerated = 0;
+      totalRequestsSucceeded = 0;
+      incidentUptimeSeconds = 0;
+      totalIncidentSeconds = 0;
+      maxP95Observed = 0;
+      manualSpikeActive = false;
+      isSpikeActive = false;
       break;
 
     default:
