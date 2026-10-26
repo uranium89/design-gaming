@@ -49,10 +49,10 @@ const INITIAL_COMPONENTS: ComponentItem[] = [
     name: 'PostgreSQL DB',
     category: 'storage',
     cost: 40,
-    capacityRps: 600,
+    capacityRps: 2000,
     addedLatencyMs: 15,
     icon: 'Database',
-    description: 'Cơ sở dữ liệu quan hệ ACID Master',
+    description: 'Cơ sở dữ liệu quan hệ ACID Master, sức chứa 2,000 RPS',
   },
   {
     id: 'cache-redis',

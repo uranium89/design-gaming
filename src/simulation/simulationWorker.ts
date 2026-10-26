@@ -11,6 +11,7 @@ let baseTrafficRps = 50;
 let spikeTrafficRps = 120;
 let budgetLimit = 35;
 let writeRatio = 0.20;
+let hasChaosCrashEvent = false;
 let manualSpikeActive = false;
 let isSpikeActive = false;
 
@@ -34,8 +35,20 @@ function runTick() {
   isSpikeActive = isAutoSpike || manualSpikeActive;
   const currentTraffic = isSpikeActive ? spikeTrafficRps : baseTrafficRps;
 
+  // Auto Chaos Crash Event for Level 3 between second 35 and 45
+  let tickNodes = currentNodes;
+  if (hasChaosCrashEvent && elapsedSeconds >= 35 && elapsedSeconds < 45) {
+    const computeNodes = currentNodes.filter((n) => n.data.category === 'compute');
+    if (computeNodes.length > 0) {
+      const targetCrashId = computeNodes[0].id;
+      tickNodes = currentNodes.map((n) =>
+        n.id === targetCrashId ? { ...n, data: { ...n.data, status: 'crashed' as const } } : n
+      );
+    }
+  }
+
   const result = calculateSimulationTick(
-    currentNodes,
+    tickNodes,
     currentEdges,
     currentTraffic,
     budgetLimit,
@@ -87,6 +100,7 @@ self.onmessage = (event: MessageEvent) => {
       if (payload.spikeRps !== undefined) spikeTrafficRps = payload.spikeRps;
       if (payload.budgetLimit !== undefined) budgetLimit = payload.budgetLimit;
       if (payload.writeRatio !== undefined) writeRatio = payload.writeRatio;
+      if (payload.hasChaosCrashEvent !== undefined) hasChaosCrashEvent = payload.hasChaosCrashEvent;
       break;
 
     case 'START':

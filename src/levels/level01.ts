@@ -14,6 +14,7 @@ export interface LevelDefinition {
   latencyTargetMs: number;
   slaTarget: number;
   writeRatio?: number;
+  hasChaosCrashEvent?: boolean;
   initialNodes: CustomNodeType[];
   initialEdges: Edge[];
   referenceNodes: CustomNodeType[];

@@ -13,5 +13,5 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 7 | [S-007: Component Inspector Tương tác cao (Interactive Inspector)](../stories/S-007-interactive-inspector/story.md) | Done | 🟢 Low | Sprint 03 |
 | 8 | [S-008: Màn 2 - Dịch vụ Rút gọn URL (Level 02: URL Shortener)](../stories/S-008-level-02-url-shortener/story.md) | Done | 🟡 Med | Sprint 03 |
 | 9 | [S-009: Load Balancer Health Check & Failover Event](../stories/S-009-load-balancer-health-check-failover/story.md) | Done | 🟡 Med | Sprint 04 |
-| 10 | [S-010: Màn 3 - Săn Sale Thời Trang (Level 03: Flash Deals Fashion)](../stories/S-010-level-03-flash-deals-fashion/story.md) | Ready | 🟢 Low | Sprint 04 |
+| 10 | [S-010: Màn 3 - Săn Sale Thời Trang (Level 03: Flash Deals Fashion)](../stories/S-010-level-03-flash-deals-fashion/story.md) | Done | 🟢 Low | Sprint 04 |
 

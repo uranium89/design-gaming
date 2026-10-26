@@ -1,0 +1,143 @@
+import type { LevelDefinition } from './level01';
+
+export const LEVEL_03: LevelDefinition = {
+  id: 'level-03-flash-deals',
+  title: 'Săn Sale Thời Trang Cuối Tuần (Flash Deals Fashion)',
+  badge: 'Level 3: Flash Deals',
+  description:
+    'Ứng dụng bán quần áo thời trang mở đợt Flash Sale cuối tuần với 500,000 khách truy cập. Lưu lượng bình thường 500 RPS và bùng nổ lên 4,000 RPS lúc 0h00 (70% Read, 30% Write). Giữa giờ cao điểm, 1 máy chủ sẽ gặp sự cố rò rỉ bộ nhớ (Memory Leak) và bốc cháy! Bạn cần xây dựng cụm máy chủ Stateless đằng sau Load Balancer, lưu Session tập trung vào Redis và duy trì SLA 99.9% dưới ngân sách $250/tháng!',
+  targetUsers: '500,000 DAU / 4,000 Peak Concurrent',
+  baseRps: 500,
+  spikeRps: 4000,
+  spikeDurationSeconds: 15,
+  budgetMax: 250,
+  latencyTargetMs: 120,
+  slaTarget: 99.9,
+  writeRatio: 0.30,
+  hasChaosCrashEvent: true,
+
+  // Bảng vẽ khởi đầu sạch: Chỉ có User Traffic ($0)
+  initialNodes: [
+    {
+      id: 'user-client-1',
+      type: 'custom',
+      position: { x: 80, y: 180 },
+      data: {
+        name: 'User Traffic',
+        category: 'routing',
+        cost: 0,
+        capacityRps: 10000,
+        addedLatencyMs: 0,
+        icon: 'Users',
+        status: 'healthy',
+        currentRps: 500,
+      },
+    },
+  ],
+  initialEdges: [],
+
+  // Kiến trúc mẫu 3★ chịu lỗi cao trong ngân sách $250:
+  // 1 LB ($25) + 2 App Servers Medium ($45 x 2 = $90) + 1 Redis ($25) + 1 Postgres DB ($40) = $180/m (<= $250)
+  referenceNodes: [
+    {
+      id: 'user-client-1',
+      type: 'custom',
+      position: { x: 60, y: 180 },
+      data: {
+        name: 'User Traffic',
+        category: 'routing',
+        cost: 0,
+        capacityRps: 10000,
+        addedLatencyMs: 0,
+        icon: 'Users',
+        status: 'healthy',
+        currentRps: 500,
+      },
+    },
+    {
+      id: 'ref-lb-1',
+      type: 'custom',
+      position: { x: 280, y: 180 },
+      data: {
+        name: 'Load Balancer',
+        category: 'routing',
+        cost: 25,
+        capacityRps: 15000,
+        addedLatencyMs: 4,
+        icon: 'Network',
+        status: 'healthy',
+        currentRps: 500,
+      },
+    },
+    {
+      id: 'ref-server-1',
+      type: 'custom',
+      position: { x: 520, y: 90 },
+      data: {
+        name: 'App Server (VM)',
+        category: 'compute',
+        cost: 45,
+        capacityRps: 3000,
+        addedLatencyMs: 20,
+        icon: 'Cpu',
+        status: 'healthy',
+        currentRps: 250,
+        tier: 'medium',
+      },
+    },
+    {
+      id: 'ref-server-2',
+      type: 'custom',
+      position: { x: 520, y: 270 },
+      data: {
+        name: 'App Server (VM)',
+        category: 'compute',
+        cost: 45,
+        capacityRps: 3000,
+        addedLatencyMs: 20,
+        icon: 'Cpu',
+        status: 'healthy',
+        currentRps: 250,
+        tier: 'medium',
+      },
+    },
+    {
+      id: 'ref-cache-1',
+      type: 'custom',
+      position: { x: 780, y: 180 },
+      data: {
+        name: 'Redis Cache',
+        category: 'storage',
+        cost: 25,
+        capacityRps: 20000,
+        addedLatencyMs: 1,
+        icon: 'Database',
+        status: 'healthy',
+        currentRps: 500,
+      },
+    },
+    {
+      id: 'ref-db-1',
+      type: 'custom',
+      position: { x: 1040, y: 180 },
+      data: {
+        name: 'PostgreSQL DB',
+        category: 'storage',
+        cost: 40,
+        capacityRps: 2000,
+        addedLatencyMs: 15,
+        icon: 'Database',
+        status: 'healthy',
+        currentRps: 150,
+      },
+    },
+  ],
+  referenceEdges: [
+    { id: 'ref-e-client-lb', source: 'user-client-1', target: 'ref-lb-1', type: 'particle' },
+    { id: 'ref-e-lb-s1', source: 'ref-lb-1', target: 'ref-server-1', type: 'particle' },
+    { id: 'ref-e-lb-s2', source: 'ref-lb-1', target: 'ref-server-2', type: 'particle' },
+    { id: 'ref-e-s1-cache', source: 'ref-server-1', target: 'ref-cache-1', type: 'particle' },
+    { id: 'ref-e-s2-cache', source: 'ref-server-2', target: 'ref-cache-1', type: 'particle' },
+    { id: 'ref-e-cache-db', source: 'ref-cache-1', target: 'ref-db-1', type: 'particle' },
+  ],
+};

@@ -105,6 +105,7 @@ export function useSimulation(level: LevelDefinition = LEVEL_01) {
           spikeRps: level.spikeRps,
           budgetLimit: level.budgetMax,
           writeRatio: level.writeRatio ?? 0.20,
+          hasChaosCrashEvent: !!level.hasChaosCrashEvent,
         },
       });
     }
