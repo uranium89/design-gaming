@@ -87,5 +87,17 @@ describe('Level 1 Modals', () => {
       fireEvent.click(screen.getByRole('button', { name: /Nạp kiến trúc mẫu/i }));
       expect(handleLoadRef).toHaveBeenCalledTimes(1);
     });
+
+    it('verifies Level 1 reference architecture includes DB and stays within $35 budget', () => {
+      const totalCost = LEVEL_01.referenceNodes
+        .filter((n) => n.data.name !== 'User Traffic')
+        .reduce((sum, n) => sum + (n.data.cost || 0), 0);
+
+      expect(totalCost).toBe(30); // VM ($20) + SQLite / Micro DB ($10)
+      expect(totalCost).toBeLessThanOrEqual(LEVEL_01.budgetMax); // 30 <= 35
+      expect(LEVEL_01.referenceNodes.some((n) => n.data.name.includes('SQLite / Micro DB'))).toBe(true);
+      expect(LEVEL_01.referenceEdges.length).toBe(2);
+    });
   });
 });
+

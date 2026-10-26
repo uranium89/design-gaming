@@ -40,14 +40,14 @@ describe('Graph Store & Inspector Unit Tests', () => {
   it('allows connecting two nodes with an edge', () => {
     useGraphStore.getState().onConnect({
       source: 'user-client-1',
-      target: 'db-postgres-1',
+      target: 'db-sqlite-1',
       sourceHandle: null,
       targetHandle: null,
     });
 
     const edges = useGraphStore.getState().edges;
     expect(edges.length).toBe(3);
-    expect(edges.some((e) => e.source === 'user-client-1' && e.target === 'db-postgres-1')).toBe(true);
+    expect(edges.some((e) => e.source === 'user-client-1' && e.target === 'db-sqlite-1')).toBe(true);
   });
 
   it('Inspector displays selected node details and allows updating capacity', () => {
@@ -68,14 +68,14 @@ describe('Graph Store & Inspector Unit Tests', () => {
   });
 
   it('Inspector allows removing a component', () => {
-    useGraphStore.getState().selectNode('db-postgres-1');
+    useGraphStore.getState().selectNode('db-sqlite-1');
     render(<Inspector />);
 
     const deleteBtn = screen.getByRole('button', { name: /remove component/i });
     expect(deleteBtn).toBeInTheDocument();
     fireEvent.click(deleteBtn);
 
-    expect(useGraphStore.getState().nodes.some((n) => n.id === 'db-postgres-1')).toBe(false);
+    expect(useGraphStore.getState().nodes.some((n) => n.id === 'db-sqlite-1')).toBe(false);
     expect(useGraphStore.getState().selectedNodeId).toBeNull();
   });
 });

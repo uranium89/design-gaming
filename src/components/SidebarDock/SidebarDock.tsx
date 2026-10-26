@@ -35,6 +35,16 @@ const INITIAL_COMPONENTS: ComponentItem[] = [
     description: 'Máy chủ xử lý nghiệp vụ ứng dụng',
   },
   {
+    id: 'db-sqlite',
+    name: 'SQLite / Micro DB',
+    category: 'storage',
+    cost: 10,
+    capacityRps: 150,
+    addedLatencyMs: 8,
+    icon: 'Database',
+    description: 'Cơ sở dữ liệu nhúng siêu tiết kiệm, $10/tháng, phù hợp dự án nhỏ dưới 150 RPS',
+  },
+  {
     id: 'db-postgres',
     name: 'PostgreSQL DB',
     category: 'storage',

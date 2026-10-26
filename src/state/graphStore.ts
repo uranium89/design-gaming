@@ -74,15 +74,15 @@ const INITIAL_NODES: CustomNodeType[] = [
     },
   },
   {
-    id: 'db-postgres-1',
+    id: 'db-sqlite-1',
     type: 'custom',
     position: { x: 680, y: 160 },
     data: {
-      name: 'PostgreSQL DB',
+      name: 'SQLite / Micro DB',
       category: 'storage',
-      cost: 40,
-      capacityRps: 600,
-      addedLatencyMs: 15,
+      cost: 10,
+      capacityRps: 150,
+      addedLatencyMs: 8,
       icon: 'Database',
       status: 'healthy',
       currentRps: 50,
@@ -100,7 +100,7 @@ const INITIAL_EDGES: Edge[] = [
   {
     id: 'e2-3',
     source: 'app-server-1',
-    target: 'db-postgres-1',
+    target: 'db-sqlite-1',
     type: 'particle',
   },
 ];
