@@ -12,6 +12,7 @@ let spikeTrafficRps = 120;
 let budgetLimit = 35;
 let writeRatio = 0.20;
 let hasChaosCrashEvent = false;
+let hasHotKeyEvent = false;
 let manualSpikeActive = false;
 let isSpikeActive = false;
 
@@ -33,7 +34,12 @@ function runTick() {
   // Auto spike trigger between second 30 and 45 (or manual toggle)
   const isAutoSpike = elapsedSeconds >= 30 && elapsedSeconds < 45;
   isSpikeActive = isAutoSpike || manualSpikeActive;
-  const currentTraffic = isSpikeActive ? spikeTrafficRps : baseTrafficRps;
+  let currentTraffic = isSpikeActive ? spikeTrafficRps : baseTrafficRps;
+
+  // Auto Chaos Hot Key Event for Level 4 between second 35 and 45 (10,000 RPS viral surge)
+  if (hasHotKeyEvent && elapsedSeconds >= 35 && elapsedSeconds < 45) {
+    currentTraffic = 10000;
+  }
 
   // Auto Chaos Crash Event for Level 3 between second 35 and 45
   let tickNodes = currentNodes;
@@ -101,6 +107,7 @@ self.onmessage = (event: MessageEvent) => {
       if (payload.budgetLimit !== undefined) budgetLimit = payload.budgetLimit;
       if (payload.writeRatio !== undefined) writeRatio = payload.writeRatio;
       if (payload.hasChaosCrashEvent !== undefined) hasChaosCrashEvent = payload.hasChaosCrashEvent;
+      if (payload.hasHotKeyEvent !== undefined) hasHotKeyEvent = payload.hasHotKeyEvent;
       break;
 
     case 'START':

@@ -106,6 +106,7 @@ export function useSimulation(level: LevelDefinition = LEVEL_01) {
           budgetLimit: level.budgetMax,
           writeRatio: level.writeRatio ?? 0.20,
           hasChaosCrashEvent: !!level.hasChaosCrashEvent,
+          hasHotKeyEvent: !!level.hasHotKeyEvent,
         },
       });
     }

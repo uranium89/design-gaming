@@ -8,7 +8,7 @@ import { TopBar } from '../../src/components/TopBar/TopBar';
 
 describe('S-010 Level 03 Flash Deals Fashion Simulation', () => {
   it('correctly exports LEVEL_03 in ALL_LEVELS list with valid parameters', () => {
-    expect(ALL_LEVELS.length).toBe(3);
+    expect(ALL_LEVELS.length).toBeGreaterThanOrEqual(3);
     expect(LEVEL_03.id).toBe('level-03-flash-deals');
     expect(LEVEL_03.badge).toBe('Level 3: Flash Deals');
     expect(LEVEL_03.budgetMax).toBe(250);

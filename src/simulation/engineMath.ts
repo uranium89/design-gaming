@@ -58,7 +58,10 @@ export function calculateSimulationTick(
 
   let totalSuccessfulRps = 0;
   let totalDroppedRps = 0;
-  let cumulativeLatencyMs = 0;
+  const pathLatency: Record<string, number> = {};
+  sourceNodes.forEach((sn) => {
+    pathLatency[sn.id] = 0;
+  });
   let hasDirectClientToStorage = false;
 
   while (queue.length > 0) {
@@ -95,14 +98,12 @@ export function calculateSimulationTick(
       totalDroppedRps += rpsIn;
       rpsOut = 0;
       nodeLatency = 500;
-      cumulativeLatencyMs += nodeLatency;
     } else if (isDirectClientOrRoutingToStorage) {
       hasDirectClientToStorage = true;
       status = 'crashed';
       nodeLatency = 500; // Connection refused / timeout
       totalDroppedRps += rpsIn;
       rpsOut = 0;
-      cumulativeLatencyMs += nodeLatency;
     } else if (currentNode.data.name !== 'User Traffic') {
       const ratio = capacity > 0 ? rpsIn / capacity : 1.0;
 
@@ -120,8 +121,6 @@ export function calculateSimulationTick(
         rpsOut = capacity;
       }
 
-      cumulativeLatencyMs += nodeLatency;
-
       // Cache absorption: 90% hit rate on read traffic
       if (isCache) {
         const readRatio = Math.max(0, 1 - writeRatio);
@@ -133,8 +132,15 @@ export function calculateSimulationTick(
       }
     }
 
+    const currentPathLatency =
+      (pathLatency[currentId] || 0) + (currentNode.data.name !== 'User Traffic' ? nodeLatency : 0);
+    pathLatency[currentId] = currentPathLatency;
+
     // Forward to downstream targets
     const targets = adjacency[currentId] || [];
+    targets.forEach((targetId) => {
+      pathLatency[targetId] = Math.max(pathLatency[targetId] || 0, currentPathLatency);
+    });
     if (targets.length > 0) {
       const isLoadBalancer = currentNode.data.name.toLowerCase().includes('load balancer');
       if (isLoadBalancer) {
@@ -287,14 +293,16 @@ export function calculateSimulationTick(
   const totalReq = totalSuccessfulRps + totalDroppedRps;
   const errorRate = totalReq > 0 ? totalDroppedRps / totalReq : 0;
 
+  const maxPathLatency = Math.max(0, ...Object.values(pathLatency));
+
   return {
     metrics: {
       throughputRps: Math.round(totalSuccessfulRps),
-      p95LatencyMs: Math.round(cumulativeLatencyMs * 1.15),
+      p95LatencyMs: Math.round(maxPathLatency * 1.15),
       costPerMonth: totalCost,
       budgetLimit,
       errorRate: Math.round(errorRate * 100) / 100,
-      activeRequests: Math.round(trafficRps * (cumulativeLatencyMs / 1000)),
+      activeRequests: Math.round(trafficRps * (maxPathLatency / 1000)),
     },
     nodeUpdates,
     architectureErrors,

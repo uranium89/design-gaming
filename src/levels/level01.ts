@@ -15,6 +15,7 @@ export interface LevelDefinition {
   slaTarget: number;
   writeRatio?: number;
   hasChaosCrashEvent?: boolean;
+  hasHotKeyEvent?: boolean;
   initialNodes: CustomNodeType[];
   initialEdges: Edge[];
   referenceNodes: CustomNodeType[];
