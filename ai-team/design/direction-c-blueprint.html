@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Direction C: Blueprint CAD (Technical Engineering)</title>
+  <style>
+    :root {
+      --bg: #0c2340;
+      --grid: rgba(255, 255, 255, 0.12);
+      --card-bg: rgba(12, 35, 64, 0.85);
+      --border: #4a90e2;
+      --text: #e2f1ff;
+      --text-muted: #8ab8e6;
+      --accent: #ffd166;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: #08182b;
+      border-bottom: 2px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-size: 1.1rem; font-weight: bold; letter-spacing: 1px; color: var(--border); }
+    .metrics { display: flex; gap: 20px; font-size: 0.85rem; }
+    .workspace { display: flex; flex: 1; }
+    .sidebar {
+      width: 250px;
+      background: #08182b;
+      border-right: 2px solid var(--border);
+      padding: 16px;
+    }
+    .node-item {
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      cursor: grab;
+      font-size: 0.85rem;
+      background: rgba(74, 144, 226, 0.1);
+    }
+    .canvas {
+      flex: 1;
+      background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 25px 25px;
+      position: relative;
+      padding: 40px;
+    }
+    .card-node {
+      position: absolute;
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      width: 180px;
+      padding: 12px;
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
+    }
+    .card-node h4 { margin: 0 0 6px 0; font-size: 0.85rem; color: var(--border); text-transform: uppercase; }
+    .card-node p { margin: 0; font-size: 0.78rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">[SCHEMATIC // SYS-ARCH-L4-TINYURL]</div>
+    <div class="metrics">
+      <div>[FLOW: 4250 RPS]</div>
+      <div>[P95: 24MS]</div>
+      <div>[EST_COST: $140]</div>
+    </div>
+  </header>
+  <div class="workspace">
+    <div class="sidebar">
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">[BLOCK_CATALOG]</div>
+      <div class="node-item">+ LB_L7_HA</div>
+      <div class="node-item">+ COMPUTE_NODE</div>
+      <div class="node-item">+ CACHE_REDIS</div>
+      <div class="node-item">+ RDBMS_MASTER</div>
+      <div class="node-item">+ QUEUE_BROKER</div>
+    </div>
+    <div class="canvas">
+      <div class="card-node" style="top: 80px; left: 80px;">
+        <h4>SRC: CLIENT_TRAFFIC</h4>
+        <p>AVG: 4250 RPS</p>
+      </div>
+      <div class="card-node" style="top: 80px; left: 360px;">
+        <h4>ROUTER: L7_BALANCER</h4>
+        <p>ALG: LEAST_CONN</p>
+      </div>
+      <div class="card-node" style="top: 80px; left: 640px;">
+        <h4>MEM: CACHE_REDIS</h4>
+        <p>HIT_RATE: 91.4%</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

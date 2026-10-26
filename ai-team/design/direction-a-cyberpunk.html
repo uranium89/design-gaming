@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Direction A: Cyberpunk Datacenter (Neon Grid)</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #111827;
+      --surface-border: #1e293b;
+      --neon-cyan: #00f0ff;
+      --neon-pink: #ff007f;
+      --neon-green: #00ff88;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', 'Segoe UI', monospace;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: rgba(17, 24, 39, 0.9);
+      border-bottom: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-size: 1.2rem; font-weight: bold; color: var(--neon-cyan); text-shadow: 0 0 8px var(--neon-cyan); }
+    .metrics { display: flex; gap: 24px; font-size: 0.9rem; }
+    .metric-val { color: var(--neon-green); font-weight: bold; }
+    .workspace { display: flex; flex: 1; }
+    .sidebar {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--surface-border);
+      padding: 16px;
+    }
+    .node-item {
+      background: #1e293b;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .node-item:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+      transform: translateX(4px);
+    }
+    .canvas {
+      flex: 1;
+      background-image: radial-gradient(rgba(0, 240, 255, 0.15) 1px, transparent 1px);
+      background-size: 24px 24px;
+      position: relative;
+      padding: 40px;
+    }
+    .card-node {
+      position: absolute;
+      background: #0f172a;
+      border: 1px solid var(--neon-cyan);
+      border-radius: 8px;
+      width: 180px;
+      padding: 14px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+    }
+    .card-node h4 { margin: 0 0 8px 0; font-size: 0.95rem; color: var(--neon-cyan); }
+    .card-node p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">⚡ SYSARCHITECT // LEVEL 4: TINYURL</div>
+    <div class="metrics">
+      <div>RPS: <span class="metric-val">4,250</span></div>
+      <div>P95: <span class="metric-val">24ms</span></div>
+      <div>COST: <span class="metric-val">$140/mo</span></div>
+      <div>BUDGET: <span style="color:#cbd5e1">$350</span></div>
+    </div>
+  </header>
+  <div class="workspace">
+    <div class="sidebar">
+      <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">INFRASTRUCTURE NODES</div>
+      <div class="node-item">🌐 Load Balancer (ALB)</div>
+      <div class="node-item">⚡ App Server (Node.js)</div>
+      <div class="node-item">🚀 Redis In-Memory Cache</div>
+      <div class="node-item">🗄️ PostgreSQL Master</div>
+      <div class="node-item">📬 RabbitMQ Broker</div>
+    </div>
+    <div class="canvas">
+      <div class="card-node" style="top: 80px; left: 80px;">
+        <h4>USER TRAFFIC</h4>
+        <p>4,250 RPS Arrival</p>
+      </div>
+      <div class="card-node" style="top: 80px; left: 360px;">
+        <h4>LOAD BALANCER</h4>
+        <p>Least Connections</p>
+      </div>
+      <div class="card-node" style="top: 80px; left: 640px;">
+        <h4>REDIS CLUSTER</h4>
+        <p>Hit Rate: 91.4%</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
