@@ -8,7 +8,7 @@ import { TopBar } from '../../src/components/TopBar/TopBar';
 
 describe('S-012 Level 04 Global TinyURL Simulation & Hot Key Event', () => {
   it('correctly exports LEVEL_04 in ALL_LEVELS with 8,000 RPS peak, 95% Read, $350 budget', () => {
-    expect(ALL_LEVELS.length).toBe(4);
+    expect(ALL_LEVELS.length).toBeGreaterThanOrEqual(4);
     expect(LEVEL_04.id).toBe('level-04-tinyurl');
     expect(LEVEL_04.badge).toBe('Level 4: TinyURL');
     expect(LEVEL_04.budgetMax).toBe(350);

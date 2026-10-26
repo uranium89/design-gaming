@@ -85,6 +85,7 @@ export function calculateSimulationTick(
   let totalDroppedRps = 0;
   const pathLatency: Record<string, number> = {};
   const asyncWriteRpsMap: Record<string, number> = {};
+  const writeRpsMap: Record<string, number> = {};
   sourceNodes.forEach((sn) => {
     pathLatency[sn.id] = 0;
   });
@@ -149,12 +150,13 @@ export function calculateSimulationTick(
 
       // Cache absorption: 90% hit rate on read traffic
       if (isCache) {
-        const readRatio = Math.max(0, 1 - writeRatio);
-        const hitTraffic = rpsOut * readRatio * 0.90;
+        const incomingWrites = writeRpsMap[currentId] || 0;
+        const incomingReads = Math.max(0, rpsIn - incomingWrites);
+        const hitTraffic = incomingReads * 0.90;
         // Hit requests are fulfilled directly by cache
         totalSuccessfulRps += hitTraffic;
         // Remaining misses and writes are forwarded downstream to DB
-        rpsOut = Math.max(0, rpsOut - hitTraffic);
+        rpsOut = Math.max(0, incomingWrites + (incomingReads - hitTraffic));
       }
     }
 
@@ -197,11 +199,14 @@ export function calculateSimulationTick(
           .map((targetId) => nodes.find((n) => n.id === targetId))
           .filter(Boolean) as CustomNodeType[];
 
+        const isCacheNode = (n: CustomNodeType) =>
+          n.data.name.toLowerCase().includes('cache') ||
+          n.data.name.toLowerCase().includes('redis');
+
         const isMasterDbNode = (n: CustomNodeType) =>
           n.data.category === 'storage' &&
-          !n.data.name.toLowerCase().includes('replica') &&
-          !n.data.name.toLowerCase().includes('cache') &&
-          !n.data.name.toLowerCase().includes('redis') &&
+          !isReplicaDbNode(n) &&
+          !isCacheNode(n) &&
           !n.data.name.toLowerCase().includes('queue') &&
           !n.data.name.toLowerCase().includes('rabbitmq');
 
@@ -223,8 +228,14 @@ export function calculateSimulationTick(
         const replicaTargets = targetNodes.filter((n) => isReplicaDbNode(n) && n.data.status !== 'crashed');
         const queueTargets = targetNodes.filter((n) => isQueueNode(n) && n.data.status !== 'crashed');
         const workerTargets = targetNodes.filter((n) => isWorkerNode(n) && n.data.status !== 'crashed');
+        const cacheTargets = targetNodes.filter((n) => isCacheNode(n) && n.data.status !== 'crashed');
         const otherTargets = targetNodes.filter(
-          (n) => !isMasterDbNode(n) && !isReplicaDbNode(n) && !isQueueNode(n) && !isWorkerNode(n)
+          (n) =>
+            !isMasterDbNode(n) &&
+            !isReplicaDbNode(n) &&
+            !isQueueNode(n) &&
+            !isWorkerNode(n) &&
+            !isCacheNode(n)
         );
 
         if (isCurrentQueue) {
@@ -266,30 +277,48 @@ export function calculateSimulationTick(
               asyncWriteRpsMap[m.id] = (asyncWriteRpsMap[m.id] || 0) + sharePerDb;
             });
           }
-        } else if (masterTargets.length > 0 || replicaTargets.length > 0 || queueTargets.length > 0) {
-          // Read/Write Splitting with Queue Support
+        } else if (
+          masterTargets.length > 0 ||
+          replicaTargets.length > 0 ||
+          queueTargets.length > 0 ||
+          cacheTargets.length > 0
+        ) {
+          // Read/Write Splitting with Queue & Cache Support
           const writePart = isCache
-            ? Math.min(rpsOut, rpsIn * writeRatio)
+            ? (writeRpsMap[currentId] || 0)
             : rpsOut * writeRatio;
           const readPart = Math.max(0, rpsOut - writePart);
 
-          // Write traffic routing: prefer Queue if available, otherwise direct to Master DB
+          // Write traffic routing: prefer Queue if available, then Master DB, or forward through Cache
           if (queueTargets.length > 0) {
             const writeShare = writePart / queueTargets.length;
             queueTargets.forEach((q) => {
               incomingRpsMap[q.id] = (incomingRpsMap[q.id] || 0) + writeShare;
+              writeRpsMap[q.id] = (writeRpsMap[q.id] || 0) + writeShare;
             });
           } else if (masterTargets.length > 0) {
             const writeShare = writePart / masterTargets.length;
             masterTargets.forEach((m) => {
               incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + writeShare;
+              writeRpsMap[m.id] = (writeRpsMap[m.id] || 0) + writeShare;
+            });
+          } else if (cacheTargets.length > 0) {
+            const writeShare = writePart / cacheTargets.length;
+            cacheTargets.forEach((c) => {
+              incomingRpsMap[c.id] = (incomingRpsMap[c.id] || 0) + writeShare;
+              writeRpsMap[c.id] = (writeRpsMap[c.id] || 0) + writeShare;
             });
           } else if (writePart > 0) {
             totalDroppedRps += writePart;
           }
 
-          // Read traffic routing: distributed across Read Replicas, fallback to Master DB
-          if (replicaTargets.length > 0) {
+          // Read traffic routing: prefer Cache for read acceleration, then Read Replicas, fallback to Master DB
+          if (cacheTargets.length > 0) {
+            const readShare = readPart / cacheTargets.length;
+            cacheTargets.forEach((c) => {
+              incomingRpsMap[c.id] = (incomingRpsMap[c.id] || 0) + readShare;
+            });
+          } else if (replicaTargets.length > 0) {
             const readShare = readPart / replicaTargets.length;
             replicaTargets.forEach((r) => {
               incomingRpsMap[r.id] = (incomingRpsMap[r.id] || 0) + readShare;
@@ -303,7 +332,7 @@ export function calculateSimulationTick(
             totalDroppedRps += readPart;
           }
 
-          // Forward to any other targets (e.g. Cache)
+          // Forward to any other targets
           otherTargets.forEach((o) => {
             incomingRpsMap[o.id] = (incomingRpsMap[o.id] || 0) + rpsOut;
           });
