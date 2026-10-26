@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trash2, Cpu, Database, Network, Mail, Users, Gauge } from 'lucide-react';
+import { X, Trash2, Cpu, Database, Network, Mail, Users, Gauge, Layers } from 'lucide-react';
 import styles from './Inspector.module.css';
 import { useGraphStore } from '../../state/graphStore';
 
@@ -49,6 +49,7 @@ export const Inspector: React.FC = () => {
       case 'Cpu': return <Cpu size={18} className={styles.nodeIcon} />;
       case 'Database': return <Database size={18} className={styles.nodeIcon} />;
       case 'Mail': return <Mail size={18} className={styles.nodeIcon} />;
+      case 'Layers': return <Layers size={18} className={styles.nodeIcon} />;
       default: return <Cpu size={18} className={styles.nodeIcon} />;
     }
   };
@@ -70,6 +71,12 @@ export const Inspector: React.FC = () => {
             <span className={styles.panelTitle}>{node.data.name}</span>
             {node.data.name.toLowerCase().includes('replica') && (
               <span className={styles.replicaBadge}>Read-Only Replica</span>
+            )}
+            {(node.data.name.toLowerCase().includes('queue') || node.data.name.toLowerCase().includes('rabbitmq')) && (
+              <span className={styles.queueBadge}>Message Queue (FIFO)</span>
+            )}
+            {node.data.name.toLowerCase().includes('worker') && (
+              <span className={styles.workerBadge}>Async Consumer</span>
             )}
           </div>
         </div>

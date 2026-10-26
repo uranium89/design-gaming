@@ -1,5 +1,5 @@
 import React from 'react';
-import { Network, Cpu, Database, Mail, Users } from 'lucide-react';
+import { Network, Cpu, Database, Mail, Users, Layers } from 'lucide-react';
 import styles from './SidebarDock.module.css';
 import { ComponentItem } from '../../types';
 
@@ -33,6 +33,16 @@ const INITIAL_COMPONENTS: ComponentItem[] = [
     addedLatencyMs: 25,
     icon: 'Cpu',
     description: 'Máy chủ xử lý nghiệp vụ ứng dụng',
+  },
+  {
+    id: 'worker-pool',
+    name: 'Worker Pool (Async Consumer)',
+    category: 'compute',
+    cost: 30,
+    capacityRps: 2000,
+    addedLatencyMs: 15,
+    icon: 'Cpu',
+    description: 'Tiến trình nền kéo tác vụ từ Message Queue để ghi dữ liệu ổn định xuống Database (Traffic Leveling)',
   },
   {
     id: 'db-sqlite',
@@ -76,13 +86,13 @@ const INITIAL_COMPONENTS: ComponentItem[] = [
   },
   {
     id: 'msg-queue',
-    name: 'Message Queue',
+    name: 'Message Queue (RabbitMQ)',
     category: 'messaging',
-    cost: 15,
-    capacityRps: 8000,
+    cost: 40,
+    capacityRps: 30000,
     addedLatencyMs: 5,
-    icon: 'Mail',
-    description: 'Hàng đợi đệm bất đồng bộ',
+    icon: 'Layers',
+    description: 'Hàng đợi thông điệp bất đồng bộ (FIFO), đệm lưu lượng tức thời, chống sập hệ thống và đảm bảo Zero Data Loss',
   },
 ];
 
@@ -94,6 +104,7 @@ export const SidebarDock: React.FC = () => {
       case 'Cpu': return <Cpu size={18} className={styles.itemIcon} />;
       case 'Database': return <Database size={18} className={styles.itemIcon} />;
       case 'Mail': return <Mail size={18} className={styles.itemIcon} />;
+      case 'Layers': return <Layers size={18} className={styles.itemIcon} />;
       default: return <Cpu size={18} className={styles.itemIcon} />;
     }
   };

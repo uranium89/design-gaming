@@ -52,13 +52,39 @@ export function calculateSimulationTick(
     adjacency[e.source].push(e.target);
   });
 
-  // BFS Queue to push traffic downstream
-  const queue: string[] = [...sourceNodes.map((s) => s.id)];
+  // Reachability from source nodes
+  const reachable = new Set<string>();
+  const reachQueue = [...sourceNodes.map((s) => s.id)];
+  while (reachQueue.length > 0) {
+    const curr = reachQueue.shift()!;
+    if (reachable.has(curr)) continue;
+    reachable.add(curr);
+    (adjacency[curr] || []).forEach((nextId) => {
+      if (!reachable.has(nextId)) reachQueue.push(nextId);
+    });
+  }
+
+  // In-degree within reachable subgraph
+  const inDegree: Record<string, number> = {};
+  reachable.forEach((id) => {
+    inDegree[id] = 0;
+  });
+  edges.forEach((e) => {
+    if (reachable.has(e.source) && reachable.has(e.target)) {
+      inDegree[e.target] = (inDegree[e.target] || 0) + 1;
+    }
+  });
+
+  // Kahn's queue initialized with source nodes having inDegree === 0
+  const queue: string[] = sourceNodes
+    .map((s) => s.id)
+    .filter((id) => reachable.has(id) && inDegree[id] === 0);
   const visited = new Set<string>();
 
   let totalSuccessfulRps = 0;
   let totalDroppedRps = 0;
   const pathLatency: Record<string, number> = {};
+  const asyncWriteRpsMap: Record<string, number> = {};
   sourceNodes.forEach((sn) => {
     pathLatency[sn.id] = 0;
   });
@@ -110,7 +136,7 @@ export function calculateSimulationTick(
       if (ratio < 0.8) {
         status = 'healthy';
         nodeLatency = addedLatency;
-      } else if (ratio < 1.0) {
+      } else if (ratio <= 1.0) {
         status = 'warning';
         nodeLatency = addedLatency * (1 + ((ratio - 0.8) / 0.2) * 2);
       } else {
@@ -154,9 +180,6 @@ export function calculateSimulationTick(
           const sharePerTarget = rpsOut / healthyTargets.length;
           healthyTargets.forEach((targetId) => {
             incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
-            if (!visited.has(targetId)) {
-              queue.push(targetId);
-            }
           });
           targets
             .filter((tId) => !healthyTargets.includes(tId))
@@ -178,77 +201,158 @@ export function calculateSimulationTick(
           n.data.category === 'storage' &&
           !n.data.name.toLowerCase().includes('replica') &&
           !n.data.name.toLowerCase().includes('cache') &&
-          !n.data.name.toLowerCase().includes('redis');
+          !n.data.name.toLowerCase().includes('redis') &&
+          !n.data.name.toLowerCase().includes('queue') &&
+          !n.data.name.toLowerCase().includes('rabbitmq');
 
         const isReplicaDbNode = (n: CustomNodeType) =>
           n.data.category === 'storage' && n.data.name.toLowerCase().includes('replica');
 
+        const isQueueNode = (n: CustomNodeType) =>
+          n.data.name.toLowerCase().includes('queue') ||
+          n.data.name.toLowerCase().includes('rabbitmq') ||
+          n.data.category === 'messaging';
+
+        const isWorkerNode = (n: CustomNodeType) =>
+          n.data.name.toLowerCase().includes('worker');
+
+        const isCurrentQueue = isQueueNode(currentNode);
+        const isCurrentWorker = isWorkerNode(currentNode);
+
         const masterTargets = targetNodes.filter((n) => isMasterDbNode(n) && n.data.status !== 'crashed');
         const replicaTargets = targetNodes.filter((n) => isReplicaDbNode(n) && n.data.status !== 'crashed');
-        const otherTargets = targetNodes.filter((n) => !isMasterDbNode(n) && !isReplicaDbNode(n));
+        const queueTargets = targetNodes.filter((n) => isQueueNode(n) && n.data.status !== 'crashed');
+        const workerTargets = targetNodes.filter((n) => isWorkerNode(n) && n.data.status !== 'crashed');
+        const otherTargets = targetNodes.filter(
+          (n) => !isMasterDbNode(n) && !isReplicaDbNode(n) && !isQueueNode(n) && !isWorkerNode(n)
+        );
 
-        const hasStorageTargets = masterTargets.length > 0 || replicaTargets.length > 0;
+        if (isCurrentQueue) {
+          // Asynchronous message buffering: write requests are accepted without drop
+          totalSuccessfulRps += rpsOut;
 
-        if (hasStorageTargets) {
-          // Read/Write Splitting
+          // Traffic Leveling to Worker Pools
+          if (workerTargets.length > 0) {
+            const totalWorkerCapacity = workerTargets.reduce(
+              (sum, w) => sum + (w.data.capacityRps || 2000),
+              0
+            );
+            const leveledRps = Math.min(rpsOut, totalWorkerCapacity);
+            const sharePerWorker = leveledRps / workerTargets.length;
+            workerTargets.forEach((w) => {
+              incomingRpsMap[w.id] = (incomingRpsMap[w.id] || 0) + sharePerWorker;
+              asyncWriteRpsMap[w.id] = (asyncWriteRpsMap[w.id] || 0) + sharePerWorker;
+            });
+            // The rest (rpsOut - leveledRps) is buffered in Queue safely without data loss!
+          } else if (masterTargets.length > 0) {
+            const totalDbCapacity = masterTargets.reduce(
+              (sum, m) => sum + (m.data.capacityRps || 2000),
+              0
+            );
+            const leveledRps = Math.min(rpsOut, totalDbCapacity);
+            const sharePerDb = leveledRps / masterTargets.length;
+            masterTargets.forEach((m) => {
+              incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + sharePerDb;
+              asyncWriteRpsMap[m.id] = (asyncWriteRpsMap[m.id] || 0) + sharePerDb;
+            });
+          }
+        } else if (isCurrentWorker) {
+          // Worker forwards processed write traffic downstream to Master DB
+          const dbTargets = masterTargets.length > 0 ? masterTargets : targetNodes.filter(isMasterDbNode);
+          if (dbTargets.length > 0) {
+            const sharePerDb = rpsOut / dbTargets.length;
+            dbTargets.forEach((m) => {
+              incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + sharePerDb;
+              asyncWriteRpsMap[m.id] = (asyncWriteRpsMap[m.id] || 0) + sharePerDb;
+            });
+          }
+        } else if (masterTargets.length > 0 || replicaTargets.length > 0 || queueTargets.length > 0) {
+          // Read/Write Splitting with Queue Support
           const writePart = isCache
             ? Math.min(rpsOut, rpsIn * writeRatio)
             : rpsOut * writeRatio;
           const readPart = Math.max(0, rpsOut - writePart);
 
-          // Write traffic routes 100% to Master DB
-          if (masterTargets.length > 0) {
+          // Write traffic routing: prefer Queue if available, otherwise direct to Master DB
+          if (queueTargets.length > 0) {
+            const writeShare = writePart / queueTargets.length;
+            queueTargets.forEach((q) => {
+              incomingRpsMap[q.id] = (incomingRpsMap[q.id] || 0) + writeShare;
+            });
+          } else if (masterTargets.length > 0) {
             const writeShare = writePart / masterTargets.length;
             masterTargets.forEach((m) => {
               incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + writeShare;
-              if (!visited.has(m.id)) queue.push(m.id);
             });
           } else if (writePart > 0) {
-            // No Master DB to receive writes -> dropped writes
             totalDroppedRps += writePart;
           }
 
-          // Read traffic: distributed across Read Replicas, fallback to Master DB if no replicas
+          // Read traffic routing: distributed across Read Replicas, fallback to Master DB
           if (replicaTargets.length > 0) {
             const readShare = readPart / replicaTargets.length;
             replicaTargets.forEach((r) => {
               incomingRpsMap[r.id] = (incomingRpsMap[r.id] || 0) + readShare;
-              if (!visited.has(r.id)) queue.push(r.id);
             });
           } else if (masterTargets.length > 0) {
-            // Fallback: Master DB handles reads as well
             const readShare = readPart / masterTargets.length;
             masterTargets.forEach((m) => {
               incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + readShare;
-              if (!visited.has(m.id)) queue.push(m.id);
             });
-          } else {
+          } else if (readPart > 0) {
             totalDroppedRps += readPart;
           }
 
-          // Forward to any other non-storage targets (e.g. Cache or Queue)
+          // Forward to any other targets (e.g. Cache)
           otherTargets.forEach((o) => {
             incomingRpsMap[o.id] = (incomingRpsMap[o.id] || 0) + rpsOut;
-            if (!visited.has(o.id)) queue.push(o.id);
           });
         } else {
           // Standard forwarding
           const sharePerTarget = rpsOut;
           targets.forEach((targetId) => {
             incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
-            if (!visited.has(targetId)) {
-              queue.push(targetId);
-            }
           });
         }
       }
-    } else if (currentNode.data.name !== 'User Traffic' && !isDirectClientOrRoutingToStorage && currentNode.data.status !== 'crashed') {
+    } else if (
+      currentNode.data.name !== 'User Traffic' &&
+      !isDirectClientOrRoutingToStorage &&
+      currentNode.data.status !== 'crashed'
+    ) {
       // Leaf node in architecture flow
       if (isCache) {
         // Cache without DB downstream drops write/miss requests
         totalDroppedRps += rpsOut;
-      } else {
+      } else if (
+        currentNode.data.name.toLowerCase().includes('queue') ||
+        currentNode.data.name.toLowerCase().includes('rabbitmq') ||
+        currentNode.data.category === 'messaging'
+      ) {
         totalSuccessfulRps += rpsOut;
+      } else {
+        const asyncWrites = asyncWriteRpsMap[currentId] || 0;
+        const syncRps = Math.max(0, rpsOut - asyncWrites);
+        totalSuccessfulRps += syncRps;
+      }
+    }
+
+    // Topological order progression: decrement in-degree for downstream targets
+    (adjacency[currentId] || []).forEach((targetId) => {
+      if (reachable.has(targetId)) {
+        inDegree[targetId] = (inDegree[targetId] || 0) - 1;
+        if (inDegree[targetId] <= 0 && !visited.has(targetId)) {
+          queue.push(targetId);
+        }
+      }
+    });
+
+    // Cycle or stall fallback
+    if (queue.length === 0) {
+      const unvisited = [...reachable].filter((id) => !visited.has(id));
+      if (unvisited.length > 0) {
+        unvisited.sort((a, b) => (inDegree[a] || 0) - (inDegree[b] || 0));
+        queue.push(unvisited[0]);
       }
     }
 
@@ -258,11 +362,13 @@ export function calculateSimulationTick(
     };
   }
 
-  // Check Layer Presence (distinguish Database from Cache)
+  // Check Layer Presence (distinguish Database from Cache and Queue)
   const isDatabaseNode = (n: CustomNodeType) =>
     n.data.category === 'storage' &&
     !n.data.name.toLowerCase().includes('cache') &&
-    !n.data.name.toLowerCase().includes('redis');
+    !n.data.name.toLowerCase().includes('redis') &&
+    !n.data.name.toLowerCase().includes('queue') &&
+    !n.data.name.toLowerCase().includes('rabbitmq');
 
   const hasComputeLayer = nodes.some(
     (n) => n.data.category === 'compute' && (incomingRpsMap[n.id] || 0) > 0
