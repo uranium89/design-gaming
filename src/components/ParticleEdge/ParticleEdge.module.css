@@ -17,6 +17,13 @@
   filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.7));
 }
 
+.edgeCrashed {
+  stroke: var(--color-danger, #ef4444);
+  stroke-width: 2.5px;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+
 .particleHealthy {
   fill: var(--color-success);
   stroke: #ffffff;

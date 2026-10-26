@@ -30,6 +30,10 @@ export function calculateSimulationTick(
   // Initialize
   nodes.forEach((n) => {
     incomingRpsMap[n.id] = 0;
+    nodeUpdates[n.id] = {
+      status: n.data.status || 'healthy',
+      currentRps: 0,
+    };
   });
 
   // Identify traffic source nodes (e.g. User Traffic)
@@ -86,7 +90,13 @@ export function calculateSimulationTick(
       currentNode.data.name.toLowerCase().includes('cache') ||
       currentNode.data.name.toLowerCase().includes('redis');
 
-    if (isDirectClientOrRoutingToStorage) {
+    if (currentNode.data.status === 'crashed') {
+      status = 'crashed';
+      totalDroppedRps += rpsIn;
+      rpsOut = 0;
+      nodeLatency = 500;
+      cumulativeLatencyMs += nodeLatency;
+    } else if (isDirectClientOrRoutingToStorage) {
       hasDirectClientToStorage = true;
       status = 'crashed';
       nodeLatency = 500; // Connection refused / timeout
@@ -123,24 +133,46 @@ export function calculateSimulationTick(
       }
     }
 
-    nodeUpdates[currentId] = {
-      status,
-      currentRps: rpsIn,
-    };
-
     // Forward to downstream targets
     const targets = adjacency[currentId] || [];
     if (targets.length > 0) {
       const isLoadBalancer = currentNode.data.name.toLowerCase().includes('load balancer');
-      const sharePerTarget = isLoadBalancer ? rpsOut / targets.length : rpsOut;
+      if (isLoadBalancer) {
+        // Health Check: only route to non-crashed targets
+        const healthyTargets = targets.filter((targetId) => {
+          const targetNode = nodes.find((n) => n.id === targetId);
+          return targetNode?.data.status !== 'crashed';
+        });
 
-      targets.forEach((targetId) => {
-        incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
-        if (!visited.has(targetId)) {
-          queue.push(targetId);
+        if (healthyTargets.length > 0) {
+          const sharePerTarget = rpsOut / healthyTargets.length;
+          healthyTargets.forEach((targetId) => {
+            incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
+            if (!visited.has(targetId)) {
+              queue.push(targetId);
+            }
+          });
+          targets
+            .filter((tId) => !healthyTargets.includes(tId))
+            .forEach((crashedId) => {
+              incomingRpsMap[crashedId] = 0;
+            });
+        } else {
+          // All downstream targets are crashed -> 503 Service Unavailable
+          status = 'overloaded';
+          totalDroppedRps += rpsOut;
+          rpsOut = 0;
         }
-      });
-    } else if (currentNode.data.name !== 'User Traffic' && !isDirectClientOrRoutingToStorage) {
+      } else {
+        const sharePerTarget = rpsOut;
+        targets.forEach((targetId) => {
+          incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
+          if (!visited.has(targetId)) {
+            queue.push(targetId);
+          }
+        });
+      }
+    } else if (currentNode.data.name !== 'User Traffic' && !isDirectClientOrRoutingToStorage && currentNode.data.status !== 'crashed') {
       // Leaf node in architecture flow
       if (isCache) {
         // Cache without DB downstream drops write/miss requests
@@ -149,6 +181,11 @@ export function calculateSimulationTick(
         totalSuccessfulRps += rpsOut;
       }
     }
+
+    nodeUpdates[currentId] = {
+      status,
+      currentRps: rpsIn,
+    };
   }
 
   // Check Layer Presence (distinguish Database from Cache)

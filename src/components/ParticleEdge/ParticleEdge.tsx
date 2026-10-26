@@ -30,9 +30,12 @@ export const ParticleEdge: React.FC<EdgeProps> = ({
   // Target node status determines congestion and particle color
   const targetNode = nodes.find((n) => n.id === target);
   const status = targetNode?.data?.status || 'healthy';
+  const isCrashed = status === 'crashed';
 
   const edgeClass =
-    status === 'overloaded'
+    isCrashed
+      ? `${styles.edgeBase} ${styles.edgeCrashed}`
+      : status === 'overloaded'
       ? `${styles.edgeBase} ${styles.edgeOverloaded}`
       : status === 'warning'
       ? `${styles.edgeBase} ${styles.edgeWarning}`
@@ -57,7 +60,7 @@ export const ParticleEdge: React.FC<EdgeProps> = ({
         className={edgeClass}
         markerEnd={markerEnd}
       />
-      {isRunning && (
+      {isRunning && !isCrashed && (
         <g data-testid={`particle-group-${id}`}>
           {offsets.map((offset, idx) => {
             const begin = `${(offset * baseDurNum).toFixed(2)}s`;

@@ -185,6 +185,27 @@ export const Inspector: React.FC = () => {
         />
       </div>
 
+      {/* Chaos Simulation (Fault Injection) */}
+      {!isUserTraffic && (
+        <div className={styles.chaosSection}>
+          <div className={styles.chaosTitle}>Mô phỏng sự cố (Chaos Engineering)</div>
+          <button
+            className={node.data.status === 'crashed' ? styles.recoverBtn : styles.crashBtn}
+            onClick={() => {
+              const nextStatus = node.data.status === 'crashed' ? 'healthy' : 'crashed';
+              updateNodeData(node.id, { status: nextStatus });
+            }}
+            aria-label={node.data.status === 'crashed' ? 'Khởi động lại node' : 'Đánh sập node'}
+          >
+            {node.data.status === 'crashed' ? (
+              <>🔄 Khởi động lại (Recover Server)</>
+            ) : (
+              <>🚨 Đánh sập node (Simulate Crash)</>
+            )}
+          </button>
+        </div>
+      )}
+
       {!isUserTraffic && (
         <button
           className={styles.dangerBtn}
