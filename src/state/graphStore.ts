@@ -19,6 +19,8 @@ export interface NodeData extends Record<string, unknown> {
   icon: string;
   status: 'healthy' | 'warning' | 'overloaded' | 'crashed';
   currentRps?: number;
+  tier?: 'small' | 'medium' | 'large';
+  algorithm?: 'round-robin' | 'least-connections' | 'ip-hash';
 }
 
 export type CustomNodeType = Node<NodeData, 'custom'>;

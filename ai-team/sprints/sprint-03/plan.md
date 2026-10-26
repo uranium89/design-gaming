@@ -1,7 +1,7 @@
 # Sprint 03 Plan: Interactive Inspector & Level 02 (URL Shortener with Caching)
 
 - **Sprint Goal**: Cung cấp khả năng cấu hình chi tiết phần cứng (vCPU, RAM, capacity, cost) trực tiếp trên Inspector Panel khi click vào Node và phát hành Màn 2 (URL Shortener) giới thiệu cơ chế In-Memory Caching (Redis) và tỉ lệ Cache Hit/Miss bão hòa DB.
-- **Trạng thái**: Draft (Chờ Stakeholder duyệt)
+- **Trạng thái**: In Progress (Approved)
 
 ## Danh sách User Stories trong Sprint 03
 

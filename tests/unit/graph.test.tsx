@@ -124,4 +124,73 @@ describe('Graph Store & Inspector Unit Tests', () => {
     expect(useGraphStore.getState().nodes.some((n) => n.id === 'db-sqlite-1')).toBe(false);
     expect(useGraphStore.getState().selectedNodeId).toBeNull();
   });
+
+  it('Inspector allows scaling instance tiers (Small -> Medium -> Large)', () => {
+    const appNode: CustomNodeType = {
+      id: 'app-server-1',
+      type: 'custom',
+      position: { x: 300, y: 180 },
+      data: {
+        name: 'App Server (VM)',
+        category: 'compute',
+        cost: 20,
+        capacityRps: 500,
+        addedLatencyMs: 25,
+        icon: 'Cpu',
+        status: 'healthy',
+      },
+    };
+    useGraphStore.getState().addNode(appNode);
+    useGraphStore.getState().selectNode('app-server-1');
+    render(<Inspector />);
+
+    // Click 'Medium' tier button
+    const mediumBtn = screen.getByRole('button', { name: /Medium/i });
+    expect(mediumBtn).toBeInTheDocument();
+    fireEvent.click(mediumBtn);
+
+    let updatedNode = useGraphStore.getState().nodes.find((n) => n.id === 'app-server-1');
+    expect(updatedNode?.data.cost).toBe(45);
+    expect(updatedNode?.data.capacityRps).toBe(1500);
+
+    // Click 'Large' tier button
+    const largeBtn = screen.getByRole('button', { name: /Large/i });
+    fireEvent.click(largeBtn);
+
+    updatedNode = useGraphStore.getState().nodes.find((n) => n.id === 'app-server-1');
+    expect(updatedNode?.data.cost).toBe(90);
+    expect(updatedNode?.data.capacityRps).toBe(4000);
+  });
+
+  it('Inspector allows changing load balancer algorithm and closing panel', () => {
+    const lbNode: CustomNodeType = {
+      id: 'lb-1',
+      type: 'custom',
+      position: { x: 200, y: 180 },
+      data: {
+        name: 'Load Balancer',
+        category: 'routing',
+        cost: 25,
+        capacityRps: 15000,
+        addedLatencyMs: 4,
+        icon: 'Network',
+        status: 'healthy',
+      },
+    };
+    useGraphStore.getState().addNode(lbNode);
+    useGraphStore.getState().selectNode('lb-1');
+    render(<Inspector />);
+
+    const algoSelect = screen.getByLabelText(/thuật toán điều phối/i) as HTMLSelectElement;
+    expect(algoSelect).toBeInTheDocument();
+    fireEvent.change(algoSelect, { target: { value: 'round-robin' } });
+
+    const updatedNode = useGraphStore.getState().nodes.find((n) => n.id === 'lb-1');
+    expect(updatedNode?.data.algorithm).toBe('round-robin');
+
+    // Close inspector
+    const closeBtn = screen.getByRole('button', { name: /close inspector/i });
+    fireEvent.click(closeBtn);
+    expect(useGraphStore.getState().selectedNodeId).toBeNull();
+  });
 });
