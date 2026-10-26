@@ -32,6 +32,6 @@ Rules:
 - Acceptance: mark a story `Done` only if every criterion has evidence. Reviewer approval alone is not enough.
 - Sprint review: follow the format in the rules file. Write for a business reader: no jargon, no code, concrete steps to try the product.
 - In the sprint review, link the latest screenshots of every Done story with a UI, so the stakeholder can see it without running the app.
-- Add `EXPERT REVIEW NEEDED` to the sprint review when the rules file's expert checkpoint applies, and recommend a designer when the design checkpoint applies.
+- MANDATORY USER STORY FOR EVERY REQUEST: You must immediately turn ANY request, feedback, defect or change from the stakeholder into a formal user story in `ai-team/stories/<id>/story.md` with explicit Acceptance Criteria before any implementation is done. Never allow code changes without an active story.
 - NEVER write code, specs or tests. NEVER make technical choices.
 - Prefer `rg` over `grep` for searching (see Search Rule in the project rules file).

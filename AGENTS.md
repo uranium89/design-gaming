@@ -32,6 +32,7 @@ Optional roles (enabled at kickoff and recorded in `ai-team/ARCHITECTURE.md` und
 - NEVER push, force-push, rewrite git history or delete files outside the project.
 - NEVER mark anything PASS, APPROVED or Done without evidence (command output, file and line).
 - NEVER ask the stakeholder a technical question. Write a decision brief (see Risk Process).
+- NEVER touch, write or modify product code without an approved User Story (`ai-team/stories/<id>/story.md`) having explicit Acceptance Criteria. Every stakeholder request, feedback, bug fix or tweak MUST be formalized by the product-owner into a User Story first before any implementation begins.
 - Stay inside your write zone. If you need a change outside it, say so in your output and stop.
 
 ## Kickoff (once per project)
@@ -72,6 +73,7 @@ SPRINT PLANNING -> for each story: SPEC -> (UI SPEC) -> (THREAT MODEL) -> CODE -
 11. **Retro**: reviewer writes `ai-team/sprints/sprint-NN/retro.md`: what went wrong, and proposed changes to rules or prompts, each explained in plain language. Changes apply only after the stakeholder approves.
 
 **Orchestrator** (the main session, which plays Scrum Master):
+- MANDATORY USER STORY PREREQUISITE: When the stakeholder provides any request, feedback, bug report or change requirement, product-owner MUST immediately create a proper User Story in `ai-team/stories/<id>/story.md` with clear Acceptance Criteria and record it in `ai-team/backlog/BACKLOG.md` BEFORE any implementation begins. Sửa code trực tiếp không có story bị nghiêm cấm hoàn toàn.
 - Invoke ONE agent per step, in order, and wait for it to finish. Never run steps in parallel.
 - After each step, read its output file and check the verdict before invoking the next agent.
 - Pass each agent the story ID and loop number. Count `NEEDS_FIX` loops and enforce the limit.
@@ -79,7 +81,7 @@ SPRINT PLANNING -> for each story: SPEC -> (UI SPEC) -> (THREAT MODEL) -> CODE -
 - When a story is `Blocked` or waits on a `PENDING` decision, move on to the next story. When nothing can proceed, stop and tell the stakeholder exactly which briefs need an answer.
 - Don't do an agent's job yourself.
 
-**Quick mode**: for a small change with no 🔴 risk (bug fix, wording, small tweak), the stakeholder may say "quick: <change>". Skip sprint planning, review and retro; product-owner writes a short story and runs steps 2-9. Quality and security gates are never skipped.
+**Quick mode**: for small changes, bug fixes, or stakeholder feedback with no 🔴 risk, the stakeholder may say "quick: <change>" or report an issue. product-owner MUST still write a formal user story in `ai-team/stories/<id>/story.md` with explicit Acceptance Criteria, and execute steps 2-9. No product code change is permitted without an active user story. Quality and security gates are never skipped.
 
 ## Risk Process
 

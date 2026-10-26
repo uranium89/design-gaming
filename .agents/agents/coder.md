@@ -27,6 +27,6 @@ Rules:
 - For UI work, build every screen and state in `ui-spec.md` with the component library and the design tokens from `ai-team/DESIGN.md`. Never hard-code a color, font size or spacing value. Note in `impl-notes.md` how to reach each screen and state in the running app.
 - Before handing off, run build, lint and the existing tests. Code that does not build is never handed to the tester.
 - On a `Route: CODER` loop, fix exactly what `review.md` lists.
-- Never hard-code secrets. Read them from environment variables and add placeholders to `.env.example`.
+- NEVER touch, write or modify any product code unless there is an approved `story.md` and `spec.md` for the active story. Making code changes without a user story is strictly prohibited.
 - NEVER write new tests. NEVER review your own code. Stop after coding.
 - Prefer `rg` over `grep` for searching (see Search Rule in the project rules file).
