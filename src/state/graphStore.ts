@@ -27,6 +27,8 @@ interface GraphStore {
   nodes: CustomNodeType[];
   edges: Edge[];
   selectedNodeId: string | null;
+  isSimulationRunning: boolean;
+  simulationSpeed: 1 | 2 | 5;
   onNodesChange: OnNodesChange<CustomNodeType>;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -34,6 +36,8 @@ interface GraphStore {
   removeNode: (id: string) => void;
   selectNode: (id: string | null) => void;
   updateNodeData: (id: string, partialData: Partial<NodeData>) => void;
+  setSimulationRunning: (running: boolean) => void;
+  setSimulationSpeed: (speed: 1 | 2 | 5) => void;
   resetGraph: () => void;
 }
 
@@ -90,15 +94,13 @@ const INITIAL_EDGES: Edge[] = [
     id: 'e1-2',
     source: 'user-client-1',
     target: 'app-server-1',
-    animated: true,
-    style: { stroke: '#6366f1', strokeWidth: 2 },
+    type: 'particle',
   },
   {
     id: 'e2-3',
     source: 'app-server-1',
     target: 'db-postgres-1',
-    animated: true,
-    style: { stroke: '#6366f1', strokeWidth: 2 },
+    type: 'particle',
   },
 ];
 
@@ -106,6 +108,8 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   nodes: INITIAL_NODES,
   edges: INITIAL_EDGES,
   selectedNodeId: null,
+  isSimulationRunning: false,
+  simulationSpeed: 1,
 
   onNodesChange: (changes) => {
     set({
@@ -124,13 +128,15 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
       edges: addEdge(
         {
           ...connection,
-          animated: true,
-          style: { stroke: '#6366f1', strokeWidth: 2 },
+          type: 'particle',
         },
         get().edges
       ),
     });
   },
+
+  setSimulationRunning: (running) => set({ isSimulationRunning: running }),
+  setSimulationSpeed: (speed) => set({ simulationSpeed: speed }),
 
   addNode: (node) => {
     set({

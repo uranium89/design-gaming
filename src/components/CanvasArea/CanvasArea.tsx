@@ -13,6 +13,7 @@ import '@xyflow/react/dist/style.css';
 import styles from './CanvasArea.module.css';
 import { useGraphStore, CustomNodeType } from '../../state/graphStore';
 import { CustomNode } from '../CustomNode/CustomNode';
+import { ParticleEdge } from '../ParticleEdge/ParticleEdge';
 import { Inspector } from '../Inspector/Inspector';
 import { ComponentItem } from '../../types';
 
@@ -30,6 +31,13 @@ const FlowCanvas: React.FC = () => {
   const nodeTypes = useMemo(
     () => ({
       custom: CustomNode,
+    }),
+    []
+  );
+
+  const edgeTypes = useMemo(
+    () => ({
+      particle: ParticleEdge,
     }),
     []
   );
@@ -93,6 +101,7 @@ const FlowCanvas: React.FC = () => {
         onNodeClick={(_, node) => selectNode(node.id)}
         onPaneClick={() => selectNode(null)}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
       >
         <Background

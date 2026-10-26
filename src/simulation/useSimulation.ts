@@ -74,17 +74,22 @@ export function useSimulation() {
     }
   }, [nodes, edges]);
 
+  const setSimulationRunning = useGraphStore((state) => state.setSimulationRunning);
+  const setGraphSimulationSpeed = useGraphStore((state) => state.setSimulationSpeed);
+
   const toggleSimulation = useCallback(() => {
     setSimulation((prev) => {
       const nextRunning = !prev.isRunning;
+      setSimulationRunning(nextRunning);
       workerRef.current?.postMessage({
         type: nextRunning ? 'START' : 'PAUSE',
       });
       return { ...prev, isRunning: nextRunning };
     });
-  }, []);
+  }, [setSimulationRunning]);
 
   const setSpeed = useCallback((speed: 1 | 2 | 5) => {
+    setGraphSimulationSpeed(speed);
     setSimulation((prev) => {
       workerRef.current?.postMessage({
         type: 'SET_SPEED',
@@ -92,7 +97,7 @@ export function useSimulation() {
       });
       return { ...prev, speed };
     });
-  }, []);
+  }, [setGraphSimulationSpeed]);
 
   return {
     metrics,

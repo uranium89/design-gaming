@@ -1,7 +1,7 @@
 # Sprint 02 Plan: Flow Visualization & Playable Level 1
 
 - **Sprint Goal**: Hoàn thiện trực quan hóa dòng hạt lưu lượng (packet flow) 60 FPS di chuyển trên dây nối và phát hành màn chơi hoàn chỉnh đầu tiên (Level 01: The Bakery) với đầy đủ kịch bản sự cố và chấm điểm 1-3 sao.
-- **Trạng thái**: Chờ Stakeholder phê duyệt (Reply "approved")
+- **Trạng thái**: In Progress (Approved)
 
 ## Danh sách User Stories trong Sprint 02
 
