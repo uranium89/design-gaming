@@ -3,15 +3,14 @@
 Shared memory for every agent. Read it before acting. The architect owns this file, except Guardrails (product-owner) and Quality Gates (devsecops).
 
 ## Guardrails
-_Filled by the product-owner from the kickoff business interview. Mark anything not answered as `UNKNOWN`._
-- Problem and users:
-- Expected users (launch / 1 year):
-- Monthly budget for hosting and paid services:
-- Sensitive data (personal, payments, other) and user countries:
-- Deadline for first usable version:
-- Who maintains it after launch:
-- Existing systems or accounts to use:
-- Design direction (products with a UI): reference sites or apps, brand colors and logo, desired feeling, phone or computer first, existing designer or design files:
+- Problem and users: Game giáo dục puzzle/simulation về System Design cho lập trình viên junior-mid luyện kiến trúc và ôn phỏng vấn.
+- Expected users (launch / 1 year): 1,000 launch / 50,000 1 year.
+- Monthly budget for hosting and paid services: $0 - $50/tháng (Client-side simulation qua Web Worker, Supabase/Vercel free tier cho MVP).
+- Sensitive data (personal, payments, other) and user countries: Không có dữ liệu thanh toán nhạy cảm; lưu user profile, tiến độ và điểm số leaderboard. Toàn cầu.
+- Deadline for first usable version: 4 tuần cho MVP cốt lõi (1-2 màn đầu); 16 tuần cho toàn bộ 10 màn.
+- Who maintains it after launch: Tác giả / Core maintainer.
+- Existing systems or accounts to use: GitHub, Vercel/Cloudflare Pages, Supabase.
+- Design direction (products with a UI): Web 2D desktop-first, giao diện Dark Theme / Cyberpunk / Cloud Console hiện đại, trực quan hóa hạt lưu lượng thời gian thực (như Factorio / Mini Metro). Reference: [docs/GAME_DESIGN_DOCUMENT.md](file:///Users/vinhpham/Documents/GitHub/design-gaming/docs/GAME_DESIGN_DOCUMENT.md).
 
 ## Team
 - Mode: single coder | fullstack (backend-dev + frontend-dev)
