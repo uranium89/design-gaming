@@ -46,7 +46,7 @@ const INITIAL_NODES: CustomNodeType[] = [
   {
     id: 'user-client-1',
     type: 'custom',
-    position: { x: 80, y: 160 },
+    position: { x: 80, y: 180 },
     data: {
       name: 'User Traffic',
       category: 'routing',
@@ -58,52 +58,9 @@ const INITIAL_NODES: CustomNodeType[] = [
       currentRps: 50,
     },
   },
-  {
-    id: 'app-server-1',
-    type: 'custom',
-    position: { x: 380, y: 160 },
-    data: {
-      name: 'App Server (VM)',
-      category: 'compute',
-      cost: 20,
-      capacityRps: 500,
-      addedLatencyMs: 25,
-      icon: 'Cpu',
-      status: 'healthy',
-      currentRps: 50,
-    },
-  },
-  {
-    id: 'db-sqlite-1',
-    type: 'custom',
-    position: { x: 680, y: 160 },
-    data: {
-      name: 'SQLite / Micro DB',
-      category: 'storage',
-      cost: 10,
-      capacityRps: 150,
-      addedLatencyMs: 8,
-      icon: 'Database',
-      status: 'healthy',
-      currentRps: 50,
-    },
-  },
 ];
 
-const INITIAL_EDGES: Edge[] = [
-  {
-    id: 'e1-2',
-    source: 'user-client-1',
-    target: 'app-server-1',
-    type: 'particle',
-  },
-  {
-    id: 'e2-3',
-    source: 'app-server-1',
-    target: 'db-sqlite-1',
-    type: 'particle',
-  },
-];
+const INITIAL_EDGES: Edge[] = [];
 
 export const useGraphStore = create<GraphStore>((set, get) => ({
   nodes: INITIAL_NODES,

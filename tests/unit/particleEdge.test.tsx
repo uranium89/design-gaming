@@ -8,6 +8,20 @@ describe('ParticleEdge Unit Tests', () => {
   beforeEach(() => {
     useGraphStore.getState().resetGraph();
     useGraphStore.getState().setSimulationRunning(false);
+    useGraphStore.getState().addNode({
+      id: 'app-server-1',
+      type: 'custom',
+      position: { x: 300, y: 100 },
+      data: {
+        name: 'App Server (VM)',
+        category: 'compute',
+        cost: 20,
+        capacityRps: 500,
+        addedLatencyMs: 25,
+        icon: 'Cpu',
+        status: 'healthy',
+      },
+    });
   });
 
   const defaultProps = {

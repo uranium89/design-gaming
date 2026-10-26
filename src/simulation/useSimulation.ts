@@ -6,7 +6,7 @@ import { TickResult } from './engineMath';
 const DEFAULT_METRICS: LiveMetrics = {
   throughputRps: 0,
   p95LatencyMs: 0,
-  costPerMonth: 60,
+  costPerMonth: 0,
   budgetLimit: 35,
   errorRate: 0,
   activeRequests: 0,

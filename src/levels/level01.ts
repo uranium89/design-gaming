@@ -13,6 +13,8 @@ export interface LevelDefinition {
   budgetMax: number;
   latencyTargetMs: number;
   slaTarget: number;
+  initialNodes: CustomNodeType[];
+  initialEdges: Edge[];
   referenceNodes: CustomNodeType[];
   referenceEdges: Edge[];
 }
@@ -31,12 +33,32 @@ export const LEVEL_01: LevelDefinition = {
   latencyTargetMs: 200,
   slaTarget: 99.0,
 
-  // Kiến trúc 2 tầng tối ưu ngân sách $35: 1 VM ($20) + 1 Micro DB ($10) = $30/tháng (<= $35)
+  // Trạng thái bắt đầu màn chơi: Chỉ có nguồn phát sinh tải User Traffic ($0)
+  initialNodes: [
+    {
+      id: 'user-client-1',
+      type: 'custom',
+      position: { x: 80, y: 180 },
+      data: {
+        name: 'User Traffic',
+        category: 'routing',
+        cost: 0,
+        capacityRps: 10000,
+        addedLatencyMs: 0,
+        icon: 'Users',
+        status: 'healthy',
+        currentRps: 50,
+      },
+    },
+  ],
+  initialEdges: [],
+
+  // Kiến trúc 2 tầng mẫu tối ưu ngân sách $35: 1 VM ($20) + 1 Micro DB ($10) = $30/tháng (<= $35)
   referenceNodes: [
     {
-      id: 'ref-client-1',
+      id: 'user-client-1',
       type: 'custom',
-      position: { x: 80, y: 160 },
+      position: { x: 80, y: 180 },
       data: {
         name: 'User Traffic',
         category: 'routing',
@@ -51,7 +73,7 @@ export const LEVEL_01: LevelDefinition = {
     {
       id: 'ref-server-1',
       type: 'custom',
-      position: { x: 400, y: 160 },
+      position: { x: 400, y: 180 },
       data: {
         name: 'App Server (VM)',
         category: 'compute',
@@ -66,7 +88,7 @@ export const LEVEL_01: LevelDefinition = {
     {
       id: 'ref-db-1',
       type: 'custom',
-      position: { x: 720, y: 160 },
+      position: { x: 720, y: 180 },
       data: {
         name: 'SQLite / Micro DB',
         category: 'storage',
@@ -82,7 +104,7 @@ export const LEVEL_01: LevelDefinition = {
   referenceEdges: [
     {
       id: 'ref-e1-2',
-      source: 'ref-client-1',
+      source: 'user-client-1',
       target: 'ref-server-1',
       type: 'particle',
     },

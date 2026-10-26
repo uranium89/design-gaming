@@ -8,12 +8,11 @@ describe('Graph Store & Inspector Unit Tests', () => {
     useGraphStore.getState().resetGraph();
   });
 
-  it('initializes with default monolith nodes and edges', () => {
+  it('initializes with default traffic source node and empty edges for puzzle solving', () => {
     const { nodes, edges } = useGraphStore.getState();
-    expect(nodes.length).toBe(3); // User Traffic, App Server, DB
-    expect(edges.length).toBe(2);
+    expect(nodes.length).toBe(1); // Only User Traffic
+    expect(edges.length).toBe(0);
     expect(nodes[0].data.name).toBe('User Traffic');
-    expect(nodes[1].data.name).toBe('App Server (VM)');
   });
 
   it('allows adding a new node to the store', () => {
@@ -33,11 +32,27 @@ describe('Graph Store & Inspector Unit Tests', () => {
     };
 
     useGraphStore.getState().addNode(newNode);
-    expect(useGraphStore.getState().nodes.length).toBe(4);
+    expect(useGraphStore.getState().nodes.length).toBe(2);
     expect(useGraphStore.getState().nodes.some((n) => n.id === 'test-cache-1')).toBe(true);
   });
 
   it('allows connecting two nodes with an edge', () => {
+    const targetNode: CustomNodeType = {
+      id: 'db-sqlite-1',
+      type: 'custom',
+      position: { x: 400, y: 180 },
+      data: {
+        name: 'SQLite / Micro DB',
+        category: 'storage',
+        cost: 10,
+        capacityRps: 150,
+        addedLatencyMs: 8,
+        icon: 'Database',
+        status: 'healthy',
+      },
+    };
+    useGraphStore.getState().addNode(targetNode);
+
     useGraphStore.getState().onConnect({
       source: 'user-client-1',
       target: 'db-sqlite-1',
@@ -46,11 +61,27 @@ describe('Graph Store & Inspector Unit Tests', () => {
     });
 
     const edges = useGraphStore.getState().edges;
-    expect(edges.length).toBe(3);
+    expect(edges.length).toBe(1);
     expect(edges.some((e) => e.source === 'user-client-1' && e.target === 'db-sqlite-1')).toBe(true);
   });
 
   it('Inspector displays selected node details and allows updating capacity', () => {
+    const appNode: CustomNodeType = {
+      id: 'app-server-1',
+      type: 'custom',
+      position: { x: 300, y: 180 },
+      data: {
+        name: 'App Server (VM)',
+        category: 'compute',
+        cost: 20,
+        capacityRps: 500,
+        addedLatencyMs: 25,
+        icon: 'Cpu',
+        status: 'healthy',
+      },
+    };
+    useGraphStore.getState().addNode(appNode);
+
     // Select app server
     useGraphStore.getState().selectNode('app-server-1');
     render(<Inspector />);
@@ -68,6 +99,21 @@ describe('Graph Store & Inspector Unit Tests', () => {
   });
 
   it('Inspector allows removing a component', () => {
+    const dbNode: CustomNodeType = {
+      id: 'db-sqlite-1',
+      type: 'custom',
+      position: { x: 500, y: 180 },
+      data: {
+        name: 'SQLite / Micro DB',
+        category: 'storage',
+        cost: 10,
+        capacityRps: 150,
+        addedLatencyMs: 8,
+        icon: 'Database',
+        status: 'healthy',
+      },
+    };
+    useGraphStore.getState().addNode(dbNode);
     useGraphStore.getState().selectNode('db-sqlite-1');
     render(<Inspector />);
 
