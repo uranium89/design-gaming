@@ -164,13 +164,77 @@ export function calculateSimulationTick(
           rpsOut = 0;
         }
       } else {
-        const sharePerTarget = rpsOut;
-        targets.forEach((targetId) => {
-          incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
-          if (!visited.has(targetId)) {
-            queue.push(targetId);
+        const targetNodes = targets
+          .map((targetId) => nodes.find((n) => n.id === targetId))
+          .filter(Boolean) as CustomNodeType[];
+
+        const isMasterDbNode = (n: CustomNodeType) =>
+          n.data.category === 'storage' &&
+          !n.data.name.toLowerCase().includes('replica') &&
+          !n.data.name.toLowerCase().includes('cache') &&
+          !n.data.name.toLowerCase().includes('redis');
+
+        const isReplicaDbNode = (n: CustomNodeType) =>
+          n.data.category === 'storage' && n.data.name.toLowerCase().includes('replica');
+
+        const masterTargets = targetNodes.filter((n) => isMasterDbNode(n) && n.data.status !== 'crashed');
+        const replicaTargets = targetNodes.filter((n) => isReplicaDbNode(n) && n.data.status !== 'crashed');
+        const otherTargets = targetNodes.filter((n) => !isMasterDbNode(n) && !isReplicaDbNode(n));
+
+        const hasStorageTargets = masterTargets.length > 0 || replicaTargets.length > 0;
+
+        if (hasStorageTargets) {
+          // Read/Write Splitting
+          const writePart = isCache
+            ? Math.min(rpsOut, rpsIn * writeRatio)
+            : rpsOut * writeRatio;
+          const readPart = Math.max(0, rpsOut - writePart);
+
+          // Write traffic routes 100% to Master DB
+          if (masterTargets.length > 0) {
+            const writeShare = writePart / masterTargets.length;
+            masterTargets.forEach((m) => {
+              incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + writeShare;
+              if (!visited.has(m.id)) queue.push(m.id);
+            });
+          } else if (writePart > 0) {
+            // No Master DB to receive writes -> dropped writes
+            totalDroppedRps += writePart;
           }
-        });
+
+          // Read traffic: distributed across Read Replicas, fallback to Master DB if no replicas
+          if (replicaTargets.length > 0) {
+            const readShare = readPart / replicaTargets.length;
+            replicaTargets.forEach((r) => {
+              incomingRpsMap[r.id] = (incomingRpsMap[r.id] || 0) + readShare;
+              if (!visited.has(r.id)) queue.push(r.id);
+            });
+          } else if (masterTargets.length > 0) {
+            // Fallback: Master DB handles reads as well
+            const readShare = readPart / masterTargets.length;
+            masterTargets.forEach((m) => {
+              incomingRpsMap[m.id] = (incomingRpsMap[m.id] || 0) + readShare;
+              if (!visited.has(m.id)) queue.push(m.id);
+            });
+          } else {
+            totalDroppedRps += readPart;
+          }
+
+          // Forward to any other non-storage targets (e.g. Cache or Queue)
+          otherTargets.forEach((o) => {
+            incomingRpsMap[o.id] = (incomingRpsMap[o.id] || 0) + rpsOut;
+            if (!visited.has(o.id)) queue.push(o.id);
+          });
+        } else {
+          // Standard forwarding
+          const sharePerTarget = rpsOut;
+          targets.forEach((targetId) => {
+            incomingRpsMap[targetId] = (incomingRpsMap[targetId] || 0) + sharePerTarget;
+            if (!visited.has(targetId)) {
+              queue.push(targetId);
+            }
+          });
+        }
       }
     } else if (currentNode.data.name !== 'User Traffic' && !isDirectClientOrRoutingToStorage && currentNode.data.status !== 'crashed') {
       // Leaf node in architecture flow

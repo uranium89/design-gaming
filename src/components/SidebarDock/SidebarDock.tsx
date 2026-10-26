@@ -65,6 +65,16 @@ const INITIAL_COMPONENTS: ComponentItem[] = [
     description: 'Bộ nhớ đệm In-Memory 1ms, hấp thụ 90% lưu lượng đọc, bảo vệ Database',
   },
   {
+    id: 'db-replica',
+    name: 'Database Read Replica',
+    category: 'storage',
+    cost: 25,
+    capacityRps: 1500,
+    addedLatencyMs: 10,
+    icon: 'Database',
+    description: 'Bản sao cơ sở dữ liệu chỉ đọc, đồng bộ từ Master, mở rộng khả năng đọc',
+  },
+  {
     id: 'msg-queue',
     name: 'Message Queue',
     category: 'messaging',

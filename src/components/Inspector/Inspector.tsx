@@ -66,7 +66,12 @@ export const Inspector: React.FC = () => {
       <div className={styles.panelHeader}>
         <div className={styles.titleGroup}>
           {getNodeIcon()}
-          <span className={styles.panelTitle}>{node.data.name}</span>
+          <div>
+            <span className={styles.panelTitle}>{node.data.name}</span>
+            {node.data.name.toLowerCase().includes('replica') && (
+              <span className={styles.replicaBadge}>Read-Only Replica</span>
+            )}
+          </div>
         </div>
         <button
           className={styles.closeBtn}

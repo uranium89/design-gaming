@@ -14,7 +14,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 8 | [S-008: Màn 2 - Dịch vụ Rút gọn URL (Level 02: URL Shortener)](../stories/S-008-level-02-url-shortener/story.md) | Done | 🟡 Med | Sprint 03 |
 | 9 | [S-009: Load Balancer Health Check & Failover Event](../stories/S-009-load-balancer-health-check-failover/story.md) | Done | 🟡 Med | Sprint 04 |
 | 10 | [S-010: Màn 3 - Săn Sale Thời Trang (Level 03: Flash Deals Fashion)](../stories/S-010-level-03-flash-deals-fashion/story.md) | Done | 🟢 Low | Sprint 04 |
-| 11 | [S-011: Phân tách Đọc/Ghi & Linh kiện Database Read Replica](../stories/S-011-database-read-replicas-read-write-splitting/story.md) | Ready | 🟡 Med | Sprint 05 |
+| 11 | [S-011: Phân tách Đọc/Ghi & Linh kiện Database Read Replica](../stories/S-011-database-read-replicas-read-write-splitting/story.md) | Done | 🟡 Med | Sprint 05 |
 | 12 | [S-012: Màn 4 - Rút Gọn Link Toàn Cầu & Xử lý Hot Key (Level 04: Global TinyURL)](../stories/S-012-level-04-global-tinyurl-hot-key/story.md) | Ready | 🟢 Low | Sprint 05 |
 
 
