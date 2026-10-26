@@ -9,6 +9,7 @@ import {
   OnEdgesChange,
   OnConnect,
 } from '@xyflow/react';
+import { CloudProvider } from '../types';
 
 export interface NodeData extends Record<string, unknown> {
   name: string;
@@ -21,6 +22,8 @@ export interface NodeData extends Record<string, unknown> {
   currentRps?: number;
   tier?: 'small' | 'medium' | 'large';
   algorithm?: 'round-robin' | 'least-connections' | 'ip-hash';
+  provider?: CloudProvider;
+  description?: string;
 }
 
 export type CustomNodeType = Node<NodeData, 'custom'>;

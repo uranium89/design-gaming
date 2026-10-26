@@ -73,6 +73,8 @@ const FlowCanvas: React.FC = () => {
             icon: item.icon,
             status: 'healthy',
             currentRps: 0,
+            provider: item.provider || 'freestyle',
+            description: item.description,
           },
         };
 

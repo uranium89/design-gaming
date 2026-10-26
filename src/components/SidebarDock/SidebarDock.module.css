@@ -9,8 +9,14 @@
 }
 
 .dockHeader {
-  padding: 16px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.dockTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .dockTitle {
@@ -21,10 +27,62 @@
   letter-spacing: 0.05em;
 }
 
+.providerBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  letter-spacing: 0.06em;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
 .dockSubtitle {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 4px;
+}
+
+.empireTabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.empireTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 6px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.empireTab:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.empireTabActive {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.tabDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .categoryList {

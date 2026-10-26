@@ -31,6 +31,30 @@ export const CustomNode: React.FC<NodeProps<CustomNodeType>> = ({
 
   const isUserTraffic = data.category === 'routing' && data.name === 'User Traffic';
 
+  const getProviderTag = (provider?: string, name?: string) => {
+    if (isUserTraffic) return null;
+    const p =
+      provider ||
+      (name?.toLowerCase().includes('aws') || name?.toLowerCase().includes('aurora') || name?.toLowerCase().includes('dynamodb') || name?.toLowerCase().includes('sqs')
+        ? 'aws'
+        : name?.toLowerCase().includes('azure') || name?.toLowerCase().includes('cosmos')
+        ? 'azure'
+        : name?.toLowerCase().includes('gcp') || name?.toLowerCase().includes('spanner') || name?.toLowerCase().includes('pub/sub')
+        ? 'gcp'
+        : 'freestyle');
+
+    switch (p) {
+      case 'aws':
+        return <span className={styles.tagAws}>AWS</span>;
+      case 'azure':
+        return <span className={styles.tagAzure}>AZURE</span>;
+      case 'gcp':
+        return <span className={styles.tagGcp}>GCP</span>;
+      default:
+        return <span className={styles.tagFoss}>FOSS</span>;
+    }
+  };
+
   return (
     <div className={`${styles.nodeCard} ${selected ? styles.selected : ''}`}>
       {/* Target handle: nhận request từ upstream (trừ User Traffic) */}
@@ -48,6 +72,7 @@ export const CustomNode: React.FC<NodeProps<CustomNodeType>> = ({
           <span className={styles.nodeName} title={data.name}>
             {data.name}
           </span>
+          {getProviderTag(data.provider, data.name)}
         </div>
         <div className={`${styles.statusDot} ${getStatusClass(data.status)}`} />
       </div>

@@ -118,7 +118,9 @@ export function calculateSimulationTick(
 
     const isCache =
       currentNode.data.name.toLowerCase().includes('cache') ||
-      currentNode.data.name.toLowerCase().includes('redis');
+      currentNode.data.name.toLowerCase().includes('redis') ||
+      currentNode.data.name.toLowerCase().includes('memorystore') ||
+      currentNode.data.name.toLowerCase().includes('elasticache');
 
     if (currentNode.data.status === 'crashed') {
       status = 'crashed';
@@ -170,7 +172,11 @@ export function calculateSimulationTick(
       pathLatency[targetId] = Math.max(pathLatency[targetId] || 0, currentPathLatency);
     });
     if (targets.length > 0) {
-      const isLoadBalancer = currentNode.data.name.toLowerCase().includes('load balancer');
+      const isLoadBalancer =
+        currentNode.data.name.toLowerCase().includes('load balancer') ||
+        currentNode.data.name.toLowerCase().includes('alb') ||
+        currentNode.data.name.toLowerCase().includes('gateway') ||
+        (currentNode.data.category === 'routing' && currentNode.data.name !== 'User Traffic');
       if (isLoadBalancer) {
         // Health Check: only route to non-crashed targets
         const healthyTargets = targets.filter((targetId) => {
@@ -201,14 +207,9 @@ export function calculateSimulationTick(
 
         const isCacheNode = (n: CustomNodeType) =>
           n.data.name.toLowerCase().includes('cache') ||
-          n.data.name.toLowerCase().includes('redis');
-
-        const isMasterDbNode = (n: CustomNodeType) =>
-          n.data.category === 'storage' &&
-          !isReplicaDbNode(n) &&
-          !isCacheNode(n) &&
-          !n.data.name.toLowerCase().includes('queue') &&
-          !n.data.name.toLowerCase().includes('rabbitmq');
+          n.data.name.toLowerCase().includes('redis') ||
+          n.data.name.toLowerCase().includes('elasticache') ||
+          n.data.name.toLowerCase().includes('memorystore');
 
         const isReplicaDbNode = (n: CustomNodeType) =>
           n.data.category === 'storage' && n.data.name.toLowerCase().includes('replica');
@@ -216,10 +217,23 @@ export function calculateSimulationTick(
         const isQueueNode = (n: CustomNodeType) =>
           n.data.name.toLowerCase().includes('queue') ||
           n.data.name.toLowerCase().includes('rabbitmq') ||
+          n.data.name.toLowerCase().includes('sqs') ||
+          n.data.name.toLowerCase().includes('service bus') ||
+          n.data.name.toLowerCase().includes('pub/sub') ||
+          n.data.name.toLowerCase().includes('pubsub') ||
           n.data.category === 'messaging';
 
         const isWorkerNode = (n: CustomNodeType) =>
-          n.data.name.toLowerCase().includes('worker');
+          n.data.name.toLowerCase().includes('worker') ||
+          n.data.name.toLowerCase().includes('lambda') ||
+          n.data.name.toLowerCase().includes('functions') ||
+          n.data.name.toLowerCase().includes('container app');
+
+        const isMasterDbNode = (n: CustomNodeType) =>
+          n.data.category === 'storage' &&
+          !isReplicaDbNode(n) &&
+          !isCacheNode(n) &&
+          !isQueueNode(n);
 
         const isCurrentQueue = isQueueNode(currentNode);
         const isCurrentWorker = isWorkerNode(currentNode);
@@ -396,6 +410,8 @@ export function calculateSimulationTick(
     n.data.category === 'storage' &&
     !n.data.name.toLowerCase().includes('cache') &&
     !n.data.name.toLowerCase().includes('redis') &&
+    !n.data.name.toLowerCase().includes('memorystore') &&
+    !n.data.name.toLowerCase().includes('elasticache') &&
     !n.data.name.toLowerCase().includes('queue') &&
     !n.data.name.toLowerCase().includes('rabbitmq');
 

@@ -1,5 +1,7 @@
 export type ComponentCategory = 'routing' | 'compute' | 'storage' | 'messaging';
 
+export type CloudProvider = 'freestyle' | 'aws' | 'azure' | 'gcp';
+
 export interface ComponentItem {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface ComponentItem {
   addedLatencyMs: number;
   icon: string;
   description: string;
+  provider?: CloudProvider;
 }
 
 export interface LiveMetrics {

@@ -62,6 +62,16 @@ export const Inspector: React.FC = () => {
 
   const currentTier = node.data.tier || (node.data.cost === 90 ? 'large' : node.data.cost === 45 ? 'medium' : 'small');
 
+  const nodeProvider =
+    node.data.provider ||
+    (node.data.name.toLowerCase().includes('aws') || node.data.name.toLowerCase().includes('aurora') || node.data.name.toLowerCase().includes('dynamodb') || node.data.name.toLowerCase().includes('sqs')
+      ? 'aws'
+      : node.data.name.toLowerCase().includes('azure') || node.data.name.toLowerCase().includes('cosmos')
+      ? 'azure'
+      : node.data.name.toLowerCase().includes('gcp') || node.data.name.toLowerCase().includes('spanner') || node.data.name.toLowerCase().includes('pub/sub')
+      ? 'gcp'
+      : node.data.name !== 'User Traffic' ? 'freestyle' : undefined);
+
   return (
     <aside className={styles.inspectorPanel} aria-label="Component Inspector">
       <div className={styles.panelHeader}>
@@ -69,13 +79,18 @@ export const Inspector: React.FC = () => {
           {getNodeIcon()}
           <div>
             <span className={styles.panelTitle}>{node.data.name}</span>
+            {nodeProvider && (
+              <span className={styles[`providerBadge_${nodeProvider}`]}>
+                {nodeProvider === 'aws' ? 'AWS' : nodeProvider === 'azure' ? 'Azure' : nodeProvider === 'gcp' ? 'GCP' : 'FOSS'}
+              </span>
+            )}
             {node.data.name.toLowerCase().includes('replica') && (
               <span className={styles.replicaBadge}>Read-Only Replica</span>
             )}
-            {(node.data.name.toLowerCase().includes('queue') || node.data.name.toLowerCase().includes('rabbitmq')) && (
+            {(node.data.name.toLowerCase().includes('queue') || node.data.name.toLowerCase().includes('rabbitmq') || node.data.name.toLowerCase().includes('sqs') || node.data.name.toLowerCase().includes('pub/sub') || node.data.name.toLowerCase().includes('service bus')) && (
               <span className={styles.queueBadge}>Message Queue (FIFO)</span>
             )}
-            {node.data.name.toLowerCase().includes('worker') && (
+            {(node.data.name.toLowerCase().includes('worker') || node.data.name.toLowerCase().includes('lambda') || node.data.name.toLowerCase().includes('functions')) && (
               <span className={styles.workerBadge}>Async Consumer</span>
             )}
           </div>
