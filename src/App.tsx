@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { TopBar } from './components/TopBar/TopBar';
 import { SidebarDock } from './components/SidebarDock/SidebarDock';
 import { CanvasArea } from './components/CanvasArea/CanvasArea';
@@ -6,26 +6,40 @@ import { BriefingModal } from './components/BriefingModal/BriefingModal';
 import { ScoreModal } from './components/ScoreModal/ScoreModal';
 import { useSimulation } from './simulation/useSimulation';
 import { useGraphStore } from './state/graphStore';
-import { LEVEL_01 } from './levels/level01';
+import { ALL_LEVELS, LEVEL_01, LevelDefinition } from './levels';
 import { calculateScore, ScoreBreakdown } from './simulation/scoring';
 import './styles/global.css';
 
 export function App() {
+  const [currentLevel, setCurrentLevel] = useState<LevelDefinition>(LEVEL_01);
+
   const { metrics, simulation, stats, toggleSimulation, setSpeed, triggerSpike, resetSimulation } =
-    useSimulation();
+    useSimulation(currentLevel);
 
   const loadArchitecture = useGraphStore((state) => state.loadArchitecture);
-  const resetGraph = useGraphStore((state) => state.resetGraph);
 
   const [isBriefingOpen, setIsBriefingOpen] = useState(true);
   const [isScoreOpen, setIsScoreOpen] = useState(false);
   const [currentScore, setCurrentScore] = useState<ScoreBreakdown | null>(null);
 
+  const handleSelectLevel = useCallback(
+    (levelId: string) => {
+      const selected = ALL_LEVELS.find((l) => l.id === levelId);
+      if (selected && selected.id !== currentLevel.id) {
+        resetSimulation();
+        setCurrentLevel(selected);
+        loadArchitecture(selected.initialNodes, selected.initialEdges);
+        setIsBriefingOpen(true);
+      }
+    },
+    [currentLevel.id, loadArchitecture, resetSimulation]
+  );
+
   const handleOpenScore = () => {
     const nodes = useGraphStore.getState().nodes;
     const edges = useGraphStore.getState().edges;
 
-    // Architecture validation
+    // Architecture validation: cannot connect User / routing directly to storage
     const hasDirectClientToStorage = edges.some((e) => {
       const srcNode = nodes.find((n) => n.id === e.source);
       const tgtNode = nodes.find((n) => n.id === e.target);
@@ -39,8 +53,13 @@ export function App() {
       (n) => n.data.category === 'compute' && edges.some((e) => e.target === n.id)
     );
 
+    const isDatabaseNode = (name: string, category: string) =>
+      category === 'storage' &&
+      !name.toLowerCase().includes('cache') &&
+      !name.toLowerCase().includes('redis');
+
     const hasStorageLayer = nodes.some(
-      (n) => n.data.category === 'storage' && edges.some((e) => e.target === n.id)
+      (n) => isDatabaseNode(n.data.name, n.data.category) && edges.some((e) => e.target === n.id)
     );
 
     const totalReq = stats?.totalRequestsGenerated || (simulation.isRunning ? 1000 : 500);
@@ -52,16 +71,16 @@ export function App() {
       totalRequests: totalReq,
       successfulRequests: successReq,
       p95LatencyMs: metrics.p95LatencyMs,
-      targetLatencyMs: LEVEL_01.latencyTargetMs,
+      targetLatencyMs: currentLevel.latencyTargetMs,
       actualCost: metrics.costPerMonth,
-      budgetMax: LEVEL_01.budgetMax,
+      budgetMax: currentLevel.budgetMax,
       incidentUptimeSeconds: stats?.incidentUptimeSeconds ?? 15,
       totalIncidentSeconds: stats?.totalIncidentSeconds ?? 15,
-      slaTarget: LEVEL_01.slaTarget,
+      slaTarget: currentLevel.slaTarget,
       hasDirectClientToStorage,
       hasComputeLayer,
       hasStorageLayer,
-      writeRatio: 0.20,
+      writeRatio: currentLevel.writeRatio ?? 0.20,
     });
 
     setCurrentScore(score);
@@ -70,13 +89,13 @@ export function App() {
 
   const handleRetry = () => {
     resetSimulation();
-    resetGraph();
+    loadArchitecture(currentLevel.initialNodes, currentLevel.initialEdges);
     setIsScoreOpen(false);
   };
 
   const handleLoadReference = () => {
     resetSimulation();
-    loadArchitecture(LEVEL_01.referenceNodes, LEVEL_01.referenceEdges);
+    loadArchitecture(currentLevel.referenceNodes, currentLevel.referenceEdges);
     setIsScoreOpen(false);
   };
 
@@ -85,6 +104,9 @@ export function App() {
       <TopBar
         metrics={metrics}
         simulation={simulation}
+        levels={ALL_LEVELS}
+        currentLevelId={currentLevel.id}
+        onSelectLevel={handleSelectLevel}
         onToggleSimulation={toggleSimulation}
         onSetSpeed={setSpeed}
         onOpenBriefing={() => setIsBriefingOpen(true)}
@@ -98,7 +120,7 @@ export function App() {
 
       <BriefingModal
         isOpen={isBriefingOpen}
-        level={LEVEL_01}
+        level={currentLevel}
         onClose={() => setIsBriefingOpen(false)}
         onStartDesign={() => setIsBriefingOpen(false)}
       />

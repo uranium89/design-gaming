@@ -147,7 +147,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
     effectiveDataLoss += 1;
     penalties += 150;
     feedback.push(
-      `⚠️ MẤT DỮ LIỆU (DATA LOSS): Thiếu Database để lưu trữ ${Math.round(writeRatio * 100)}% đơn đặt bánh online! Trừ 150 điểm.`
+      `⚠️ MẤT DỮ LIỆU (DATA LOSS): Thiếu Database để lưu trữ ${Math.round(writeRatio * 100)}% yêu cầu ghi dữ liệu (Write)! Trừ 150 điểm.`
     );
   }
 
@@ -182,7 +182,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
   } else if (
     totalScore >= 850 &&
     computedUptime >= slaTarget &&
-    actualCost <= 0.75 * budgetMax &&
+    actualCost <= 0.80 * budgetMax &&
     effectiveDataLoss === 0
   ) {
     stars = 3;

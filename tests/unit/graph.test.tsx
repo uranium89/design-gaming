@@ -151,7 +151,7 @@ describe('Graph Store & Inspector Unit Tests', () => {
 
     let updatedNode = useGraphStore.getState().nodes.find((n) => n.id === 'app-server-1');
     expect(updatedNode?.data.cost).toBe(45);
-    expect(updatedNode?.data.capacityRps).toBe(1500);
+    expect(updatedNode?.data.capacityRps).toBe(3000);
 
     // Click 'Large' tier button
     const largeBtn = screen.getByRole('button', { name: /Large/i });
@@ -159,7 +159,7 @@ describe('Graph Store & Inspector Unit Tests', () => {
 
     updatedNode = useGraphStore.getState().nodes.find((n) => n.id === 'app-server-1');
     expect(updatedNode?.data.cost).toBe(90);
-    expect(updatedNode?.data.capacityRps).toBe(4000);
+    expect(updatedNode?.data.capacityRps).toBe(6000);
   });
 
   it('Inspector allows changing load balancer algorithm and closing panel', () => {

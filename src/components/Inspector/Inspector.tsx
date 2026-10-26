@@ -5,8 +5,8 @@ import { useGraphStore } from '../../state/graphStore';
 
 const COMPUTE_TIERS = [
   { id: 'small', name: 'Small', vcpu: '2C/4GB', cost: 20, capacityRps: 500, latency: 25 },
-  { id: 'medium', name: 'Medium', vcpu: '4C/8GB', cost: 45, capacityRps: 1500, latency: 20 },
-  { id: 'large', name: 'Large', vcpu: '8C/16GB', cost: 90, capacityRps: 4000, latency: 15 },
+  { id: 'medium', name: 'Medium', vcpu: '4C/8GB', cost: 45, capacityRps: 3000, latency: 20 },
+  { id: 'large', name: 'Large', vcpu: '8C/16GB', cost: 90, capacityRps: 6000, latency: 15 },
 ] as const;
 
 export const Inspector: React.FC = () => {

@@ -3,9 +3,14 @@ import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame } from 'lucide-react'
 import styles from './TopBar.module.css';
 import { LiveMetrics, SimulationState } from '../../types';
 
+import { LevelDefinition } from '../../levels/level01';
+
 interface TopBarProps {
   metrics: LiveMetrics;
   simulation: SimulationState;
+  levels?: LevelDefinition[];
+  currentLevelId?: string;
+  onSelectLevel?: (levelId: string) => void;
   onToggleSimulation: () => void;
   onSetSpeed: (speed: 1 | 2 | 5) => void;
   onOpenBriefing?: () => void;
@@ -16,6 +21,9 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({
   metrics,
   simulation,
+  levels,
+  currentLevelId,
+  onSelectLevel,
   onToggleSimulation,
   onSetSpeed,
   onOpenBriefing,
@@ -35,10 +43,28 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Server className={styles.brandIcon} size={20} />
           <span>SysArchitect</span>
         </div>
-        <div className={styles.levelBadge}>
-          <Zap size={12} style={{ display: 'inline', marginRight: 4 }} />
-          Level 1: The Bakery
-        </div>
+        {levels && levels.length > 0 ? (
+          <div className={styles.levelSelectorContainer}>
+            <Zap size={13} className={styles.levelIcon} />
+            <select
+              className={styles.levelSelect}
+              value={currentLevelId}
+              onChange={(e) => onSelectLevel?.(e.target.value)}
+              aria-label="Chọn màn chơi"
+            >
+              {levels.map((lvl) => (
+                <option key={lvl.id} value={lvl.id}>
+                  {lvl.badge}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className={styles.levelBadge}>
+            <Zap size={12} style={{ display: 'inline', marginRight: 4 }} />
+            Level 1: The Bakery
+          </div>
+        )}
         {onOpenBriefing && (
           <button
             className={styles.ghostBtn}

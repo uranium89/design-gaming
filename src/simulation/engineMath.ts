@@ -20,7 +20,8 @@ export function calculateSimulationTick(
   nodes: CustomNodeType[],
   edges: Edge[],
   trafficRps: number = 50,
-  budgetLimit: number = 35
+  budgetLimit: number = 35,
+  writeRatio: number = 0.20
 ): TickResult {
   const nodeUpdates: Record<string, NodeSimUpdate> = {};
   const incomingRpsMap: Record<string, number> = {};
@@ -81,6 +82,10 @@ export function calculateSimulationTick(
         return srcNode?.data.name === 'User Traffic' || srcNode?.data.category === 'routing';
       });
 
+    const isCache =
+      currentNode.data.name.toLowerCase().includes('cache') ||
+      currentNode.data.name.toLowerCase().includes('redis');
+
     if (isDirectClientOrRoutingToStorage) {
       hasDirectClientToStorage = true;
       status = 'crashed';
@@ -106,6 +111,16 @@ export function calculateSimulationTick(
       }
 
       cumulativeLatencyMs += nodeLatency;
+
+      // Cache absorption: 90% hit rate on read traffic
+      if (isCache) {
+        const readRatio = Math.max(0, 1 - writeRatio);
+        const hitTraffic = rpsOut * readRatio * 0.90;
+        // Hit requests are fulfilled directly by cache
+        totalSuccessfulRps += hitTraffic;
+        // Remaining misses and writes are forwarded downstream to DB
+        rpsOut = Math.max(0, rpsOut - hitTraffic);
+      }
     }
 
     nodeUpdates[currentId] = {
@@ -127,16 +142,26 @@ export function calculateSimulationTick(
       });
     } else if (currentNode.data.name !== 'User Traffic' && !isDirectClientOrRoutingToStorage) {
       // Leaf node in architecture flow
-      totalSuccessfulRps += rpsOut;
+      if (isCache) {
+        // Cache without DB downstream drops write/miss requests
+        totalDroppedRps += rpsOut;
+      } else {
+        totalSuccessfulRps += rpsOut;
+      }
     }
   }
 
-  // Check Layer Presence
+  // Check Layer Presence (distinguish Database from Cache)
+  const isDatabaseNode = (n: CustomNodeType) =>
+    n.data.category === 'storage' &&
+    !n.data.name.toLowerCase().includes('cache') &&
+    !n.data.name.toLowerCase().includes('redis');
+
   const hasComputeLayer = nodes.some(
     (n) => n.data.category === 'compute' && (incomingRpsMap[n.id] || 0) > 0
   );
   const hasStorageLayer = nodes.some(
-    (n) => n.data.category === 'storage' && (incomingRpsMap[n.id] || 0) > 0
+    (n) => isDatabaseNode(n) && (incomingRpsMap[n.id] || 0) > 0
   );
 
   if (hasDirectClientToStorage) {
@@ -147,9 +172,9 @@ export function calculateSimulationTick(
     architectureErrors.push(
       'THIẾU TẦNG XỬ LÝ (COMPUTE): Không có App Server để chạy backend web và xử lý đơn hàng!'
     );
-  } else if (hasComputeLayer && !hasStorageLayer) {
+  } else if (hasComputeLayer && !hasStorageLayer && writeRatio > 0) {
     architectureErrors.push(
-      'MẤT DỮ LIỆU (DATA LOSS): Hệ thống thiếu Database để lưu trữ 20% đơn hàng đặt bánh!'
+      `MẤT DỮ LIỆU (DATA LOSS): Hệ thống thiếu Database để lưu trữ ${Math.round(writeRatio * 100)}% yêu cầu ghi dữ liệu (Write)!`
     );
   }
 

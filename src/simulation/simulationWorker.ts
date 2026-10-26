@@ -10,6 +10,7 @@ let speed: 1 | 2 | 5 = 1;
 let baseTrafficRps = 50;
 let spikeTrafficRps = 120;
 let budgetLimit = 35;
+let writeRatio = 0.20;
 let manualSpikeActive = false;
 let isSpikeActive = false;
 
@@ -33,7 +34,13 @@ function runTick() {
   isSpikeActive = isAutoSpike || manualSpikeActive;
   const currentTraffic = isSpikeActive ? spikeTrafficRps : baseTrafficRps;
 
-  const result = calculateSimulationTick(currentNodes, currentEdges, currentTraffic, budgetLimit);
+  const result = calculateSimulationTick(
+    currentNodes,
+    currentEdges,
+    currentTraffic,
+    budgetLimit,
+    writeRatio
+  );
 
   totalRequestsGenerated += currentTraffic * dt;
   totalRequestsSucceeded += result.metrics.throughputRps * dt;
@@ -79,6 +86,7 @@ self.onmessage = (event: MessageEvent) => {
       if (payload.baseRps !== undefined) baseTrafficRps = payload.baseRps;
       if (payload.spikeRps !== undefined) spikeTrafficRps = payload.spikeRps;
       if (payload.budgetLimit !== undefined) budgetLimit = payload.budgetLimit;
+      if (payload.writeRatio !== undefined) writeRatio = payload.writeRatio;
       break;
 
     case 'START':

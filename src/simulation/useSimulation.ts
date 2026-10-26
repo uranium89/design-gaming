@@ -3,6 +3,9 @@ import { useGraphStore } from '../state/graphStore';
 import { LiveMetrics, SimulationState, SimulationStats } from '../types';
 import { TickResult } from './engineMath';
 
+import { LevelDefinition } from '../levels/level01';
+import { LEVEL_01 } from '../levels/level01';
+
 const DEFAULT_METRICS: LiveMetrics = {
   throughputRps: 0,
   p95LatencyMs: 0,
@@ -22,14 +25,17 @@ const DEFAULT_STATS: SimulationStats = {
   maxP95Observed: 0,
 };
 
-export function useSimulation() {
+export function useSimulation(level: LevelDefinition = LEVEL_01) {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const updateNodeData = useGraphStore((state) => state.updateNodeData);
 
   const workerRef = useRef<Worker | null>(null);
 
-  const [metrics, setMetrics] = useState<LiveMetrics>(DEFAULT_METRICS);
+  const [metrics, setMetrics] = useState<LiveMetrics>({
+    ...DEFAULT_METRICS,
+    budgetLimit: level.budgetMax,
+  });
   const [stats, setStats] = useState<SimulationStats>(DEFAULT_STATS);
   const [simulation, setSimulation] = useState<SimulationState>({
     isRunning: false,
@@ -86,21 +92,23 @@ export function useSimulation() {
     };
   }, [updateNodeData]);
 
-  // Sync graph with worker when nodes or edges change
+  // Sync graph and level parameters with worker when nodes, edges, or level change
   useEffect(() => {
+    setMetrics((prev) => ({ ...prev, budgetLimit: level.budgetMax }));
     if (workerRef.current) {
       workerRef.current.postMessage({
         type: 'SYNC_GRAPH',
         payload: {
           nodes,
           edges,
-          baseRps: 50,
-          spikeRps: 120,
-          budgetLimit: 35,
+          baseRps: level.baseRps,
+          spikeRps: level.spikeRps,
+          budgetLimit: level.budgetMax,
+          writeRatio: level.writeRatio ?? 0.20,
         },
       });
     }
-  }, [nodes, edges]);
+  }, [nodes, edges, level]);
 
   const setSimulationRunning = useGraphStore((state) => state.setSimulationRunning);
   const setGraphSimulationSpeed = useGraphStore((state) => state.setSimulationSpeed);

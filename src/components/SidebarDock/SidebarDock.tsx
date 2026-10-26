@@ -55,6 +55,16 @@ const INITIAL_COMPONENTS: ComponentItem[] = [
     description: 'Cơ sở dữ liệu quan hệ ACID Master',
   },
   {
+    id: 'cache-redis',
+    name: 'Redis Cache',
+    category: 'storage',
+    cost: 25,
+    capacityRps: 20000,
+    addedLatencyMs: 1,
+    icon: 'Database',
+    description: 'Bộ nhớ đệm In-Memory 1ms, hấp thụ 90% lưu lượng đọc, bảo vệ Database',
+  },
+  {
     id: 'msg-queue',
     name: 'Message Queue',
     category: 'messaging',

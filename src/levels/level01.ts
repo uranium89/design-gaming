@@ -13,6 +13,7 @@ export interface LevelDefinition {
   budgetMax: number;
   latencyTargetMs: number;
   slaTarget: number;
+  writeRatio?: number;
   initialNodes: CustomNodeType[];
   initialEdges: Edge[];
   referenceNodes: CustomNodeType[];
@@ -32,6 +33,7 @@ export const LEVEL_01: LevelDefinition = {
   budgetMax: 35,
   latencyTargetMs: 200,
   slaTarget: 99.0,
+  writeRatio: 0.20,
 
   // Trạng thái bắt đầu màn chơi: Chỉ có nguồn phát sinh tải User Traffic ($0)
   initialNodes: [
