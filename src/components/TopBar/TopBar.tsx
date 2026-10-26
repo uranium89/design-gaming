@@ -1,15 +1,20 @@
 import React from 'react';
-import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame } from 'lucide-react';
+import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders } from 'lucide-react';
 import styles from './TopBar.module.css';
 import { LiveMetrics, SimulationState } from '../../types';
-
 import { LevelDefinition } from '../../levels/level01';
+import { loadProgress, renderStarString, GameProgress } from '../../services/progressStorage';
 
 interface TopBarProps {
   metrics: LiveMetrics;
   simulation: SimulationState;
   levels?: LevelDefinition[];
   currentLevelId?: string;
+  progress?: GameProgress;
+  sandboxTrafficRps?: number;
+  sandboxWriteRatio?: number;
+  onSetSandboxTrafficRps?: (rps: number) => void;
+  onSetSandboxWriteRatio?: (ratio: number) => void;
   onSelectLevel?: (levelId: string) => void;
   onToggleSimulation: () => void;
   onSetSpeed: (speed: 1 | 2 | 5) => void;
@@ -23,6 +28,11 @@ export const TopBar: React.FC<TopBarProps> = ({
   simulation,
   levels,
   currentLevelId,
+  progress,
+  sandboxTrafficRps = 1000,
+  sandboxWriteRatio = 0.20,
+  onSetSandboxTrafficRps,
+  onSetSandboxWriteRatio,
   onSelectLevel,
   onToggleSimulation,
   onSetSpeed,
@@ -30,6 +40,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenScoring,
   onTriggerSpike,
 }) => {
+  const currentProgress = progress || loadProgress();
+  const isSandbox = currentLevelId === 'sandbox';
   const isSpikeActive = simulation.stats?.isSpikeActive || false;
   const elapsed = simulation.elapsedSeconds || 0;
   const mins = Math.floor(elapsed / 60);
@@ -52,11 +64,16 @@ export const TopBar: React.FC<TopBarProps> = ({
               onChange={(e) => onSelectLevel?.(e.target.value)}
               aria-label="Chọn màn chơi"
             >
-              {levels.map((lvl) => (
-                <option key={lvl.id} value={lvl.id}>
-                  {lvl.badge}
-                </option>
-              ))}
+              {levels.map((lvl) => {
+                const stars = currentProgress[lvl.id]?.stars || 0;
+                const starStr = renderStarString(stars);
+                const displayTitle = starStr ? `${lvl.badge} ${starStr}` : lvl.badge;
+                return (
+                  <option key={lvl.id} value={lvl.id}>
+                    {displayTitle}
+                  </option>
+                );
+              })}
             </select>
           </div>
         ) : (
@@ -110,14 +127,50 @@ export const TopBar: React.FC<TopBarProps> = ({
           ⏱ {timeFormatted}
         </div>
 
-        {onTriggerSpike && (
-          <button
-            className={`${styles.spikeBtn} ${isSpikeActive ? styles.spikeActive : ''}`}
-            onClick={onTriggerSpike}
-            title={isSpikeActive ? 'Đang xảy ra bùng nổ lưu lượng!' : 'Kích hoạt thử nghiệm Spike 120 RPS'}
-          >
-            <Flame size={13} /> {isSpikeActive ? 'Spike Đang Diễn Ra!' : 'Thử Spike'}
-          </button>
+        {isSandbox ? (
+          <div className={styles.sandboxControls}>
+            <div className={styles.sandboxField}>
+              <span className={styles.sandboxLabel}>
+                <Sliders size={12} style={{ display: 'inline', marginRight: 3 }} />
+                Tải:
+              </span>
+              <input
+                type="range"
+                min="100"
+                max="50000"
+                step="500"
+                value={sandboxTrafficRps}
+                onChange={(e) => onSetSandboxTrafficRps?.(Number(e.target.value))}
+                className={styles.sandboxSlider}
+                aria-label="Điều chỉnh RPS Sandbox"
+              />
+              <span className={styles.sandboxValue}>{sandboxTrafficRps.toLocaleString()} RPS</span>
+            </div>
+            <div className={styles.sandboxField}>
+              <span className={styles.sandboxLabel}>Ghi:</span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={sandboxWriteRatio}
+                onChange={(e) => onSetSandboxWriteRatio?.(Number(e.target.value))}
+                className={styles.sandboxSlider}
+                aria-label="Điều chỉnh tỉ lệ ghi Sandbox"
+              />
+              <span className={styles.sandboxValue}>{Math.round(sandboxWriteRatio * 100)}%</span>
+            </div>
+          </div>
+        ) : (
+          onTriggerSpike && (
+            <button
+              className={`${styles.spikeBtn} ${isSpikeActive ? styles.spikeActive : ''}`}
+              onClick={onTriggerSpike}
+              title={isSpikeActive ? 'Đang xảy ra bùng nổ lưu lượng!' : 'Kích hoạt thử nghiệm Spike'}
+            >
+              <Flame size={13} /> {isSpikeActive ? 'Spike Đang Diễn Ra!' : 'Thử Spike'}
+            </button>
+          )
         )}
       </div>
 
@@ -146,7 +199,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className={styles.metricPill}>
           <span className={styles.metricLabel}>Budget Max</span>
           <span className={`${styles.metricValue} ${styles.metricNeutral} mono-metric`}>
-            ${metrics.budgetLimit} /mo
+            {metrics.budgetLimit >= 999999 ? '∞ /mo' : `$${metrics.budgetLimit} /mo`}
           </span>
         </div>
 

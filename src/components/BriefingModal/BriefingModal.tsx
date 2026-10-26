@@ -17,12 +17,21 @@ export const BriefingModal: React.FC<BriefingModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const getBadgeIcon = (id: string) => {
+    if (id === 'sandbox') return '🛠️';
+    if (id.includes('concert')) return '🎫';
+    if (id.includes('tinyurl')) return '🌐';
+    if (id.includes('flash')) return '⚡';
+    if (id.includes('url')) return '🔗';
+    return '🧁';
+  };
+
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="briefing-title">
       <div className={styles.modal}>
         <div className={styles.header}>
           <div className={styles.titleGroup}>
-            <div className={styles.iconBadge}>🧁</div>
+            <div className={styles.iconBadge}>{getBadgeIcon(level.id)}</div>
             <div>
               <div className={styles.subtitle}>{level.badge}</div>
               <h2 id="briefing-title" className={styles.title}>
@@ -50,7 +59,9 @@ export const BriefingModal: React.FC<BriefingModalProps> = ({
             </div>
             <div className={styles.gridItem}>
               <span className={styles.itemLabel}>Ngân sách trần</span>
-              <span className={styles.itemValue}>${level.budgetMax} / tháng</span>
+              <span className={styles.itemValue}>
+                {level.budgetMax >= 999999 ? 'Không giới hạn (∞)' : `$${level.budgetMax} / tháng`}
+              </span>
             </div>
             <div className={styles.gridItem}>
               <span className={styles.itemLabel}>Mục tiêu P95 Latency</span>

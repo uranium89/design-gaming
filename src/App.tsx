@@ -8,13 +8,22 @@ import { useSimulation } from './simulation/useSimulation';
 import { useGraphStore } from './state/graphStore';
 import { ALL_LEVELS, LEVEL_01, LevelDefinition } from './levels';
 import { calculateScore, ScoreBreakdown } from './simulation/scoring';
+import { loadProgress, saveLevelProgress } from './services/progressStorage';
 import './styles/global.css';
 
 export function App() {
   const [currentLevel, setCurrentLevel] = useState<LevelDefinition>(LEVEL_01);
+  const [progress, setProgress] = useState(loadProgress);
+  const [sandboxRps, setSandboxRps] = useState(1000);
+  const [sandboxWriteRatio, setSandboxWriteRatio] = useState(0.20);
+
+  const customParams =
+    currentLevel.id === 'sandbox'
+      ? { baseRps: sandboxRps, writeRatio: sandboxWriteRatio }
+      : undefined;
 
   const { metrics, simulation, stats, toggleSimulation, setSpeed, triggerSpike, resetSimulation } =
-    useSimulation(currentLevel);
+    useSimulation(currentLevel, customParams);
 
   const loadArchitecture = useGraphStore((state) => state.loadArchitecture);
 
@@ -85,6 +94,10 @@ export function App() {
 
     setCurrentScore(score);
     setIsScoreOpen(true);
+    if (currentLevel.id !== 'sandbox') {
+      const updated = saveLevelProgress(currentLevel.id, score.stars, score.totalScore);
+      setProgress(updated);
+    }
   };
 
   const handleRetry = () => {
@@ -106,6 +119,11 @@ export function App() {
         simulation={simulation}
         levels={ALL_LEVELS}
         currentLevelId={currentLevel.id}
+        progress={progress}
+        sandboxTrafficRps={sandboxRps}
+        sandboxWriteRatio={sandboxWriteRatio}
+        onSetSandboxTrafficRps={setSandboxRps}
+        onSetSandboxWriteRatio={setSandboxWriteRatio}
         onSelectLevel={handleSelectLevel}
         onToggleSimulation={toggleSimulation}
         onSetSpeed={setSpeed}

@@ -25,7 +25,10 @@ const DEFAULT_STATS: SimulationStats = {
   maxP95Observed: 0,
 };
 
-export function useSimulation(level: LevelDefinition = LEVEL_01) {
+export function useSimulation(
+  level: LevelDefinition = LEVEL_01,
+  customParams?: { baseRps?: number; writeRatio?: number }
+) {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const updateNodeData = useGraphStore((state) => state.updateNodeData);
@@ -92,25 +95,32 @@ export function useSimulation(level: LevelDefinition = LEVEL_01) {
     };
   }, [updateNodeData]);
 
-  // Sync graph and level parameters with worker when nodes, edges, or level change
+  // Sync graph and level parameters with worker when nodes, edges, level or customParams change
   useEffect(() => {
     setMetrics((prev) => ({ ...prev, budgetLimit: level.budgetMax }));
+    const effectiveBaseRps = customParams?.baseRps ?? level.baseRps;
+    const effectiveSpikeRps =
+      level.id === 'sandbox'
+        ? effectiveBaseRps
+        : level.spikeRps;
+    const effectiveWriteRatio = customParams?.writeRatio ?? (level.writeRatio ?? 0.20);
+
     if (workerRef.current) {
       workerRef.current.postMessage({
         type: 'SYNC_GRAPH',
         payload: {
           nodes,
           edges,
-          baseRps: level.baseRps,
-          spikeRps: level.spikeRps,
+          baseRps: effectiveBaseRps,
+          spikeRps: effectiveSpikeRps,
           budgetLimit: level.budgetMax,
-          writeRatio: level.writeRatio ?? 0.20,
+          writeRatio: effectiveWriteRatio,
           hasChaosCrashEvent: !!level.hasChaosCrashEvent,
           hasHotKeyEvent: !!level.hasHotKeyEvent,
         },
       });
     }
-  }, [nodes, edges, level]);
+  }, [nodes, edges, level, customParams?.baseRps, customParams?.writeRatio]);
 
   const setSimulationRunning = useGraphStore((state) => state.setSimulationRunning);
   const setGraphSimulationSpeed = useGraphStore((state) => state.setSimulationSpeed);

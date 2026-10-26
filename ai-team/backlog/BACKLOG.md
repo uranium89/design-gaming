@@ -19,7 +19,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 13 | [S-013: Linh Kiện Message Queue (RabbitMQ) & Worker Pool (Async Processing)](../stories/S-013-message-queue-async-worker/story.md) | Done | 🟡 Med | Sprint 06 |
 | 14 | [S-014: Màn 5 - Săn Vé Concert Black Friday (Level 05: Concert Ticket Rush)](../stories/S-014-level-05-concert-ticket-rush/story.md) | Done | 🟢 Low | Sprint 06 |
 | 15 | [S-015: Hệ Thống 4 Đế Chế Đám Mây (Cloud Empires: Freestyle, AWS, Azure, GCP) & Kho Linh Kiện Nhà Cung Cấp](../stories/S-015-cloud-empires-component-catalogs/story.md) | Done | 🟡 Med | Sprint 07 |
-| 16 | [S-016: Chế Độ Sandbox Tự Do & Lưu Trữ Tiến Trình Chơi (LocalStorage Star Tracking)](../stories/S-016-sandbox-mode-progress-persistence/story.md) | Ready | 🟢 Low | Sprint 07 |
+| 16 | [S-016: Chế Độ Sandbox Tự Do & Lưu Trữ Tiến Trình Chơi (LocalStorage Star Tracking)](../stories/S-016-sandbox-mode-progress-persistence/story.md) | Done | 🟢 Low | Sprint 07 |
 
 
 
