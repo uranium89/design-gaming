@@ -16,5 +16,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 10 | [S-010: Màn 3 - Săn Sale Thời Trang (Level 03: Flash Deals Fashion)](../stories/S-010-level-03-flash-deals-fashion/story.md) | Done | 🟢 Low | Sprint 04 |
 | 11 | [S-011: Phân tách Đọc/Ghi & Linh kiện Database Read Replica](../stories/S-011-database-read-replicas-read-write-splitting/story.md) | Done | 🟡 Med | Sprint 05 |
 | 12 | [S-012: Màn 4 - Rút Gọn Link Toàn Cầu & Xử lý Hot Key (Level 04: Global TinyURL)](../stories/S-012-level-04-global-tinyurl-hot-key/story.md) | Done | 🟢 Low | Sprint 05 |
+| 13 | [S-013: Linh Kiện Message Queue (RabbitMQ) & Worker Pool (Async Processing)](../stories/S-013-message-queue-async-worker/story.md) | Ready | 🟡 Med | Sprint 06 |
+| 14 | [S-014: Màn 5 - Săn Vé Concert Black Friday (Level 05: Concert Ticket Rush)](../stories/S-014-level-05-concert-ticket-rush/story.md) | Ready | 🟢 Low | Sprint 06 |
 
 
