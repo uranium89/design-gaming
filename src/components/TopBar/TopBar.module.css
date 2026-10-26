@@ -1,0 +1,126 @@
+.topBar {
+  height: 56px;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  user-select: none;
+  z-index: 10;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.brandIcon {
+  color: var(--color-primary);
+}
+
+.levelBadge {
+  background-color: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #c7d2fe;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
+.centerSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.controlBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.runBtn {
+  background-color: var(--color-success);
+  color: #fff;
+}
+
+.runBtn:hover {
+  background-color: #059669;
+}
+
+.pauseBtn {
+  background-color: var(--color-warning);
+  color: #000;
+}
+
+.speedSelector {
+  display: flex;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.speedBtn {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.speedBtn.active {
+  background-color: var(--bg-surface-raised);
+  color: var(--text-main);
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.metricPill {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-canvas);
+  border: 1px solid var(--border-default);
+  padding: 4px 12px;
+  border-radius: 6px;
+  min-width: 90px;
+}
+
+.metricLabel {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.metricValue {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.metricSuccess { color: var(--color-success); }
+.metricWarning { color: var(--color-warning); }
+.metricNeutral { color: var(--text-main); }

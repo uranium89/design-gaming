@@ -1,7 +1,7 @@
 # Sprint 01 Plan: Engine Prototype & Foundation
 
 - **Sprint Goal**: Xây dựng nền tảng ứng dụng web hoàn chỉnh gồm theme giao diện theo phong cách đã chọn, canvas kéo-thả node kiến trúc với React Flow, và bộ mô phỏng Web Worker cơ bản.
-- **Trạng thái**: Chờ Stakeholder phê duyệt (Reply "approved")
+- **Trạng thái**: In Progress (Approved)
 
 ## Danh sách User Stories trong Sprint
 

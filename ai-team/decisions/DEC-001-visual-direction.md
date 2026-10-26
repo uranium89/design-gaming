@@ -1,5 +1,5 @@
 # DEC-001: Lựa chọn phong cách thiết kế giao diện (Visual Style)
-Status: PENDING
+Status: DECIDED: Option B (Modern Cloud Console / Enterprise Dark)
 Why this needs you: Phong cách thị giác định hình trực tiếp cảm xúc, thương hiệu và độ hấp dẫn của game đối với người chơi.
 
 | Option | Cost per month | Time impact | What happens if it's wrong | Hard to change later? |

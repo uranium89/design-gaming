@@ -1,0 +1,57 @@
+.canvasArea {
+  flex: 1;
+  height: calc(100vh - 56px);
+  background-color: var(--bg-canvas);
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderPrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(30, 41, 59, 0.7);
+  border: 1px dashed var(--border-default);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 32px 48px;
+  text-align: center;
+  max-width: 460px;
+  box-shadow: var(--shadow-md);
+  user-select: none;
+}
+
+.promptTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.promptSubtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.actionButton {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: var(--color-primary);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--color-primary-hover);
+}
