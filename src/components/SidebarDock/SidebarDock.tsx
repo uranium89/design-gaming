@@ -75,6 +75,11 @@ export const SidebarDock: React.FC = () => {
     { key: 'messaging', label: 'Messaging & Queue' },
   ];
 
+  const onDragStart = (event: React.DragEvent, item: ComponentItem) => {
+    event.dataTransfer.setData('application/reactflow', JSON.stringify(item));
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <aside className={styles.sidebarDock}>
       <div className={styles.dockHeader}>
@@ -91,7 +96,13 @@ export const SidebarDock: React.FC = () => {
               <div className={styles.categoryTitle}>{cat.label}</div>
               <div className={styles.itemList}>
                 {items.map((item) => (
-                  <div key={item.id} className={styles.itemCard} title={item.description}>
+                  <div
+                    key={item.id}
+                    className={styles.itemCard}
+                    title={item.description}
+                    draggable
+                    onDragStart={(e) => onDragStart(e, item)}
+                  >
                     <div className={styles.itemLeft}>
                       {getIcon(item.icon)}
                       <div>

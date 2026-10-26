@@ -1,0 +1,103 @@
+.nodeCard {
+  width: 200px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.nodeCard.selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary), var(--shadow-glow);
+}
+
+.nodeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nodeIcon {
+  color: var(--color-primary);
+}
+
+.nodeName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+}
+
+.statusHealthy {
+  background-color: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.statusWarning {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 6px var(--color-warning);
+}
+
+.statusOverloaded {
+  background-color: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
+}
+
+.statusCrashed {
+  background-color: #64748b;
+}
+
+.nodeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.metricRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.metricCost {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+/* Custom Handles */
+.handleTarget {
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-primary);
+  border: 2px solid #fff;
+  border-radius: 9999px;
+}
+
+.handleSource {
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-success);
+  border: 2px solid #fff;
+  border-radius: 9999px;
+}
