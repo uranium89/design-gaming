@@ -23,6 +23,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 17 | [S-017: Hệ Thống Mở Khóa Màn Chơi Theo Tiến Trình & Quản Lý Dữ Liệu Chơi (Campaign Level Unlocking Progression & Reset)](../stories/S-017-campaign-level-unlocking-progression/story.md) | Done | 🟢 Low | Sprint 08 |
 | 18 | [S-018: Xuất, Nhập & Chia Sẻ Bản Vẽ Kiến Trúc (Architecture Blueprint Export, Import & Shareable Link)](../stories/S-018-architecture-blueprint-export-import-share/story.md) | Done | 🟢 Low | Sprint 08 |
 | 19 | [S-019: Tối Ưu Bố Cục TopBar & Chống Tràn Giao Diện (TopBar Responsive Layout & Action Consolidation)](../stories/S-019-topbar-responsive-layout-consolidation/story.md) | Done | 🟢 Low | Sprint 08 |
+| 20 | [S-020: Khắc Phục Lỗi Mở Khóa Màn Chơi Chặt Chẽ (Strict Sequential Level Unlocking & Stale Progress Invalidation)](../stories/S-020-strict-sequential-level-unlocking/story.md) | Done | 🟢 Low | Sprint 08 |
 
 
 

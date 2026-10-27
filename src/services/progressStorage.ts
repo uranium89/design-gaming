@@ -32,26 +32,26 @@ export function getNextLevelId(levelId: string): string | null {
 /**
  * Checks whether a level is unlocked.
  * - 'level-01-bakery' and 'sandbox' are always unlocked.
- * - Other campaign levels are unlocked if explicitly marked unlocked OR if the preceding level has at least 1 star.
+ * - Other campaign levels are strictly unlocked ONLY if ALL preceding levels in the campaign sequence
+ *   have been completed with at least 1 star or marked passed.
+ * - Stale or unvalidated unlocked flags on higher levels without completed predecessors are rejected.
  */
 export function isLevelUnlocked(progress: GameProgress, levelId: string): boolean {
   if (levelId === 'sandbox' || levelId === 'level-01-bakery') {
     return true;
   }
 
-  // Check if explicitly unlocked in saved progress
-  if (progress[levelId]?.unlocked) {
-    return true;
-  }
-
-  // Check previous level in sequence for backwards compatibility
   const index = CAMPAIGN_LEVEL_SEQUENCE.indexOf(levelId as (typeof CAMPAIGN_LEVEL_SEQUENCE)[number]);
   if (index > 0) {
-    const prevLevelId = CAMPAIGN_LEVEL_SEQUENCE[index - 1];
-    const prevProgress = progress[prevLevelId];
-    if (prevProgress && (prevProgress.stars >= 1 || prevProgress.passed)) {
-      return true;
+    // Every predecessor level must have >= 1 star or passed === true
+    for (let i = 0; i < index; i++) {
+      const predLevelId = CAMPAIGN_LEVEL_SEQUENCE[i];
+      const predProgress = progress[predLevelId];
+      if (!predProgress || (predProgress.stars < 1 && !predProgress.passed)) {
+        return false;
+      }
     }
+    return true;
   }
 
   return false;
@@ -70,7 +70,7 @@ export function getUnlockRequirementText(levelId: string): string {
 
 /**
  * Loads game progress from browser localStorage.
- * Automatically recovers from missing or corrupted data.
+ * Automatically recovers from missing or corrupted data and sanitizes unlocked flags.
  */
 export function loadProgress(): GameProgress {
   if (typeof window === 'undefined' || !window.localStorage) {
@@ -90,15 +90,24 @@ export function loadProgress(): GameProgress {
     for (const [levelId, val] of Object.entries(parsed)) {
       if (typeof val === 'object' && val !== null) {
         const item = val as Record<string, unknown>;
+        const defaultUnlocked = levelId === 'level-01-bakery' || levelId === 'sandbox';
         sanitized[levelId] = {
           stars: Math.max(0, Math.min(3, Math.round(Number(item.stars) || 0))),
           totalScore: Math.max(0, Math.round(Number(item.totalScore) || 0)),
           passed: Boolean(item.passed),
-          unlocked: item.unlocked !== undefined ? Boolean(item.unlocked) : true,
+          unlocked: item.unlocked !== undefined ? Boolean(item.unlocked) : defaultUnlocked,
           updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : undefined,
         };
       }
     }
+
+    // Sanitize unlocked state across all campaign levels against strict progression rules
+    for (const levelId of CAMPAIGN_LEVEL_SEQUENCE) {
+      if (sanitized[levelId]) {
+        sanitized[levelId].unlocked = isLevelUnlocked(sanitized, levelId);
+      }
+    }
+
     return sanitized;
   } catch (err) {
     console.warn('Failed to load progress from localStorage:', err);

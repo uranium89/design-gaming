@@ -80,6 +80,34 @@ describe('S-017 Campaign Level Unlocking Progression & Reset Unit Tests', () => 
       expect(isLevelUnlocked(legacyProgress, 'level-02-tech-news')).toBe(true);
     });
 
+    it('strictly keeps Level 5 locked even if localStorage has unlocked: true when predecessors are incomplete', () => {
+      // Bug scenario: localStorage contains Level 5 marked unlocked, but Level 4 is not passed
+      const staleProgressWithLevel5 = {
+        'level-01-bakery': { stars: 1, totalScore: 50, passed: true, unlocked: true },
+        'level-05-ticket-rush': { stars: 0, totalScore: 0, passed: false, unlocked: true },
+      };
+
+      // Level 5 MUST NOT be unlocked because Level 2, 3, 4 are not passed!
+      expect(isLevelUnlocked(staleProgressWithLevel5, 'level-05-ticket-rush')).toBe(false);
+      expect(isLevelUnlocked(staleProgressWithLevel5, 'level-02-tech-news')).toBe(true);
+      expect(isLevelUnlocked(staleProgressWithLevel5, 'level-03-flash-deals')).toBe(false);
+      expect(isLevelUnlocked(staleProgressWithLevel5, 'level-04-tinyurl')).toBe(false);
+    });
+
+    it('sanitizes stale unlocked flags in localStorage during loadProgress()', () => {
+      // Simulate raw corrupted / stale localStorage from an earlier sprint
+      const rawCorruptedStorage = {
+        'level-01-bakery': { stars: 0, totalScore: 0, passed: false },
+        'level-05-ticket-rush': { stars: 0, totalScore: 0, passed: false, unlocked: true },
+      };
+      window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(rawCorruptedStorage));
+
+      const loaded = loadProgress();
+      expect(loaded['level-01-bakery'].unlocked).toBe(true);
+      expect(loaded['level-05-ticket-rush'].unlocked).toBe(false);
+      expect(isLevelUnlocked(loaded, 'level-05-ticket-rush')).toBe(false);
+    });
+
     it('resets all progress and locks all levels except Level 1 and Sandbox', () => {
       // Save progress across levels
       saveLevelProgress('level-01-bakery', 3, 95);
