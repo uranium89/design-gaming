@@ -1,5 +1,6 @@
 {
-  "name": "sysarchitect",
+  "name": "design-gaming",
+  "description": "Design Gaming - Interactive System Design Simulator & Puzzle Game",
   "private": true,
   "version": "0.1.0",
   "type": "module",

@@ -70,7 +70,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       <div className={styles.leftSection}>
         <div className={styles.brand}>
           <Server className={styles.brandIcon} size={20} />
-          <span>SysArchitect</span>
+          <span>Design Gaming</span>
         </div>
         {levels && levels.length > 0 ? (
           <div className={styles.levelSelectorContainer}>

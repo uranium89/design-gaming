@@ -6,7 +6,7 @@ import { TopBar } from '../../src/components/TopBar/TopBar';
 describe('Design Foundation Unit Tests', () => {
   it('renders the TopBar with game title and initial metrics', () => {
     render(<App />);
-    expect(screen.getByText('SysArchitect')).toBeInTheDocument();
+    expect(screen.getByText('Design Gaming')).toBeInTheDocument();
     expect(screen.getAllByText(/Level 1: The Bakery/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('0 RPS')).toBeInTheDocument();
     expect(screen.getByText('0 ms')).toBeInTheDocument();
