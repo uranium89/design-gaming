@@ -28,6 +28,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 22 | [S-022: Giao Diện Xem Trước Bản Vẽ Kiến Trúc Trước Khi Nạp (Blueprint Preview Modal & Overwrite Safety)](../stories/S-022-blueprint-preview-overwrite-safety/story.md) | Done | 🟢 Low | Sprint 09 |
 | 23 | [S-023: Màn 6 - Ứng Dụng Nhắn Tin Trực Tuyến Toàn Cầu (Level 06: Global Chat App - WebSockets & Redis Pub/Sub)](../stories/S-023-level-06-global-chat-app/story.md) | Done | 🟡 Med | Sprint 09 |
 | 24 | [S-024: Đổi Tên Ứng Dụng Thành Design Gaming & Cập Nhật Toàn Diện README (App Rebranding & README Update)](../stories/S-024-app-rebranding-design-gaming-readme/story.md) | Done | 🟢 Low | Quick Mode |
+| 25 | [S-025: Khắc Phục Lỗi Cài Đặt Gói Phụ Thuộc Peer Dependencies Khi Deploy Lên Vercel (Fix Vercel Build Peer Dependency Resolution)](../stories/S-025-fix-vercel-build-peer-dependency-resolution/story.md) | Done | 🟢 Low | Quick Mode |
 
 
 
