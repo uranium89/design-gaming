@@ -314,3 +314,40 @@ export function decodeBlueprintFromHash(hashString: string): BlueprintValidation
     };
   }
 }
+
+export interface BlueprintSummary {
+  levelId: string;
+  activeEmpire?: CloudProvider;
+  nodesCount: number;
+  edgesCount: number;
+  totalCost: number;
+  componentBreakdown: { name: string; count: number }[];
+}
+
+/**
+ * Computes summary metrics, component counts, and cost for blueprint preview.
+ */
+export function summarizeBlueprint(blueprint: ArchitectureBlueprint): BlueprintSummary {
+  const componentCounts = new Map<string, number>();
+  let totalCost = 0;
+
+  for (const node of blueprint.nodes) {
+    const name = node.data.name || 'Component';
+    componentCounts.set(name, (componentCounts.get(name) || 0) + 1);
+    totalCost += Number(node.data.cost) || 0;
+  }
+
+  const componentBreakdown = Array.from(componentCounts.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    levelId: blueprint.levelId,
+    activeEmpire: blueprint.activeEmpire,
+    nodesCount: blueprint.nodes.length,
+    edgesCount: blueprint.edges.length,
+    totalCost,
+    componentBreakdown,
+  };
+}
+

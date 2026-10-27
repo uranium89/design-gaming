@@ -6,6 +6,7 @@ import {
   parseAndValidateBlueprint,
   encodeBlueprintToHash,
   decodeBlueprintFromHash,
+  summarizeBlueprint,
   ArchitectureBlueprint,
 } from '../../src/services/blueprintService';
 import { BlueprintModal } from '../../src/components/BlueprintModal/BlueprintModal';
@@ -233,6 +234,104 @@ describe('S-018 Architecture Blueprint Export, Import & Share Unit Tests', () =>
       );
 
       expect(container.firstChild).toBeNull();
+    });
+
+    it('summarizes blueprint metrics, cost, and component breakdown accurately', () => {
+      const bp: ArchitectureBlueprint = {
+        version: 1,
+        timestamp: new Date().toISOString(),
+        levelId: 'level-03-flash-deals',
+        activeEmpire: 'aws',
+        nodes: mockNodes,
+        edges: mockEdges,
+      };
+
+      const summary = summarizeBlueprint(bp);
+      expect(summary.levelId).toBe('level-03-flash-deals');
+      expect(summary.activeEmpire).toBe('aws');
+      expect(summary.nodesCount).toBe(2);
+      expect(summary.edgesCount).toBe(1);
+      expect(summary.totalCost).toBe(20); // 0 + 20
+      expect(summary.componentBreakdown).toEqual([
+        { name: 'User Traffic', count: 1 },
+        { name: 'App Server', count: 1 },
+      ]);
+    });
+
+    it('displays Preview Card with overwrite warning when file is uploaded and confirms import', async () => {
+      const onImport = vi.fn();
+      render(
+        <BlueprintModal
+          isOpen={true}
+          onClose={vi.fn()}
+          levelId="sandbox"
+          activeEmpire="aws"
+          nodes={mockNodes}
+          edges={mockEdges}
+          onImportBlueprint={onImport}
+        />
+      );
+
+      const validJson = exportBlueprintToJson('level-02-tech-news', 'aws', mockNodes, mockEdges);
+      const file = new File([validJson], 'test-blueprint.json', { type: 'application/json' });
+
+      // Mock FileReader
+      const fileInput = document.querySelector('#blueprint-file-input') as HTMLInputElement;
+      expect(fileInput).not.toBeNull();
+
+      // Trigger change
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      // Wait for Preview Card to render
+      await waitFor(() => {
+        expect(screen.getByTestId('blueprint-preview-card')).toBeInTheDocument();
+      });
+
+      // Verify metrics & level
+      expect(screen.getByText('level-02-tech-news')).toBeInTheDocument();
+      expect(screen.getByText('$20/th')).toBeInTheDocument();
+
+      // Verify overwrite warning is displayed since Canvas has 2 nodes
+      expect(screen.getByTestId('overwrite-warning')).toBeInTheDocument();
+      expect(screen.getByText(/Bản vẽ này sẽ thay thế 2 linh kiện hiện tại/i)).toBeInTheDocument();
+
+      // Click Confirm import
+      const confirmBtn = screen.getByRole('button', { name: /Xác nhận nạp bản vẽ/i });
+      fireEvent.click(confirmBtn);
+
+      expect(onImport).toHaveBeenCalledTimes(1);
+      expect(screen.getByText(/Nạp thành công bản vẽ/i)).toBeInTheDocument();
+    });
+
+    it('cancels preview card and restores file chooser when cancel is clicked', async () => {
+      render(
+        <BlueprintModal
+          isOpen={true}
+          onClose={vi.fn()}
+          levelId="sandbox"
+          nodes={mockNodes}
+          edges={mockEdges}
+          onImportBlueprint={vi.fn()}
+        />
+      );
+
+      const validJson = exportBlueprintToJson('level-02-tech-news', 'aws', mockNodes, mockEdges);
+      const file = new File([validJson], 'test-blueprint.json', { type: 'application/json' });
+
+      const fileInput = document.querySelector('#blueprint-file-input') as HTMLInputElement;
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('blueprint-preview-card')).toBeInTheDocument();
+      });
+
+      // Click cancel
+      const cancelBtn = screen.getByRole('button', { name: /Hủy nạp bản vẽ/i });
+      fireEvent.click(cancelBtn);
+
+      // Preview card should be removed, file chooser button restored
+      expect(screen.queryByTestId('blueprint-preview-card')).toBeNull();
+      expect(screen.getByRole('button', { name: /Chọn file JSON để nạp/i })).toBeInTheDocument();
     });
   });
 });

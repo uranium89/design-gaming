@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Share2, Download, Upload, Copy, Check, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Share2, Download, Upload, Copy, Check, AlertCircle, CheckCircle, X, AlertTriangle } from 'lucide-react';
 import styles from './BlueprintModal.module.css';
 import { CustomNodeType } from '../../state/graphStore';
 import { Edge } from '@xyflow/react';
@@ -10,6 +10,7 @@ import {
   downloadBlueprintFile,
   parseAndValidateBlueprint,
   encodeBlueprintToHash,
+  summarizeBlueprint,
 } from '../../services/blueprintService';
 
 interface BlueprintModalProps {
@@ -33,6 +34,7 @@ export const BlueprintModal: React.FC<BlueprintModalProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [importStatus, setImportStatus] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
+  const [pendingBlueprint, setPendingBlueprint] = useState<ArchitectureBlueprint | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const blueprint: ArchitectureBlueprint = useMemo(
@@ -46,6 +48,11 @@ export const BlueprintModal: React.FC<BlueprintModalProps> = ({
     }),
     [levelId, activeEmpire, nodes, edges]
   );
+
+  const previewSummary = useMemo(() => {
+    if (!pendingBlueprint) return null;
+    return summarizeBlueprint(pendingBlueprint);
+  }, [pendingBlueprint]);
 
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
@@ -90,12 +97,10 @@ export const BlueprintModal: React.FC<BlueprintModalProps> = ({
       const result = parseAndValidateBlueprint(text);
 
       if (result.success && result.blueprint) {
-        onImportBlueprint(result.blueprint);
-        setImportStatus({
-          type: 'success',
-          message: `Nạp thành công bản vẽ (${result.blueprint.nodes.length} nodes, ${result.blueprint.edges.length} edges)!`,
-        });
+        setPendingBlueprint(result.blueprint);
+        setImportStatus(null);
       } else {
+        setPendingBlueprint(null);
         setImportStatus({
           type: 'error',
           message: result.error || 'File bản vẽ không đúng định dạng.',
@@ -111,6 +116,20 @@ export const BlueprintModal: React.FC<BlueprintModalProps> = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleConfirmImport = () => {
+    if (!pendingBlueprint) return;
+    onImportBlueprint(pendingBlueprint);
+    setImportStatus({
+      type: 'success',
+      message: `Nạp thành công bản vẽ (${pendingBlueprint.nodes.length} nodes, ${pendingBlueprint.edges.length} edges)!`,
+    });
+    setPendingBlueprint(null);
+  };
+
+  const handleCancelPending = () => {
+    setPendingBlueprint(null);
   };
 
   return (
@@ -196,23 +215,95 @@ export const BlueprintModal: React.FC<BlueprintModalProps> = ({
             <p className={styles.sectionDesc}>
               Nạp lại file `.json` bản vẽ đã xuất trước đó lên vùng vẽ Canvas hiện tại.
             </p>
-            <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept=".json"
-                onChange={handleFileChange}
-                className={styles.hiddenFileInput}
-                id="blueprint-file-input"
-              />
-              <button
-                className={styles.btnSecondary}
-                onClick={() => fileInputRef.current?.click()}
-                aria-label="Chọn file JSON để nạp"
-              >
-                <Upload size={14} /> Chọn file JSON
-              </button>
-            </div>
+
+            {pendingBlueprint && previewSummary ? (
+              <div className={styles.previewCard} data-testid="blueprint-preview-card">
+                <div className={styles.previewHeader}>
+                  <h3 className={styles.previewTitle}>Xem trước bản vẽ</h3>
+                  <div className={styles.badgeRow}>
+                    <span className={`${styles.previewBadge} ${styles.levelBadge}`}>
+                      {previewSummary.levelId}
+                    </span>
+                    {previewSummary.activeEmpire && (
+                      <span className={`${styles.previewBadge} ${styles.empireBadge}`}>
+                        {previewSummary.activeEmpire}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.metricsGrid}>
+                  <div className={styles.metricItem}>
+                    <span className={styles.metricItemLabel}>Linh kiện</span>
+                    <span className={styles.metricItemValue}>{previewSummary.nodesCount}</span>
+                  </div>
+                  <div className={styles.metricItem}>
+                    <span className={styles.metricItemLabel}>Kết nối</span>
+                    <span className={styles.metricItemValue}>{previewSummary.edgesCount}</span>
+                  </div>
+                  <div className={styles.metricItem}>
+                    <span className={styles.metricItemLabel}>Chi phí dự toán</span>
+                    <span className={styles.metricItemValue}>${previewSummary.totalCost}/th</span>
+                  </div>
+                </div>
+
+                {previewSummary.componentBreakdown.length > 0 && (
+                  <div className={styles.chipsContainer}>
+                    {previewSummary.componentBreakdown.map((item) => (
+                      <span key={item.name} className={styles.chip}>
+                        {item.name} × {item.count}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {nodes.length > 0 && (
+                  <div className={styles.warningBox} data-testid="overwrite-warning">
+                    <AlertTriangle size={16} style={{ flexShrink: 0, color: '#f59e0b' }} />
+                    <span>
+                      Cảnh báo: Bản vẽ này sẽ thay thế {nodes.length} linh kiện hiện tại trên Canvas của bạn.
+                    </span>
+                  </div>
+                )}
+
+                <div className={styles.previewActions}>
+                  <button
+                    type="button"
+                    className={styles.btnSecondary}
+                    onClick={handleCancelPending}
+                    aria-label="Hủy nạp bản vẽ"
+                  >
+                    Hủy / Chọn file khác
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.btnPrimary} ${styles.btnSuccess}`}
+                    onClick={handleConfirmImport}
+                    aria-label="Xác nhận nạp bản vẽ"
+                  >
+                    <Check size={14} /> Xác nhận nạp bản vẽ
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".json"
+                  onChange={handleFileChange}
+                  className={styles.hiddenFileInput}
+                  id="blueprint-file-input"
+                />
+                <button
+                  className={styles.btnSecondary}
+                  onClick={() => fileInputRef.current?.click()}
+                  aria-label="Chọn file JSON để nạp"
+                >
+                  <Upload size={14} /> Chọn file JSON
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
