@@ -16,6 +16,7 @@ export const CAMPAIGN_LEVEL_SEQUENCE = [
   'level-03-flash-deals',
   'level-04-tinyurl',
   'level-05-ticket-rush',
+  'level-06-global-chat',
 ] as const;
 
 /**

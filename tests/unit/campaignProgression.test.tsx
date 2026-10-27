@@ -21,13 +21,14 @@ describe('S-017 Campaign Level Unlocking Progression & Reset Unit Tests', () => 
   });
 
   describe('Campaign Level Progression Service', () => {
-    it('verifies campaign level sequence has 5 ordered levels', () => {
+    it('verifies campaign level sequence has 6 ordered levels', () => {
       expect(CAMPAIGN_LEVEL_SEQUENCE).toEqual([
         'level-01-bakery',
         'level-02-tech-news',
         'level-03-flash-deals',
         'level-04-tinyurl',
         'level-05-ticket-rush',
+        'level-06-global-chat',
       ]);
     });
 
@@ -36,7 +37,8 @@ describe('S-017 Campaign Level Unlocking Progression & Reset Unit Tests', () => 
       expect(getNextLevelId('level-02-tech-news')).toBe('level-03-flash-deals');
       expect(getNextLevelId('level-03-flash-deals')).toBe('level-04-tinyurl');
       expect(getNextLevelId('level-04-tinyurl')).toBe('level-05-ticket-rush');
-      expect(getNextLevelId('level-05-ticket-rush')).toBeNull();
+      expect(getNextLevelId('level-05-ticket-rush')).toBe('level-06-global-chat');
+      expect(getNextLevelId('level-06-global-chat')).toBeNull();
       expect(getNextLevelId('sandbox')).toBeNull();
     });
 
@@ -48,6 +50,7 @@ describe('S-017 Campaign Level Unlocking Progression & Reset Unit Tests', () => 
       expect(isLevelUnlocked(emptyProgress, 'level-03-flash-deals')).toBe(false);
       expect(isLevelUnlocked(emptyProgress, 'level-04-tinyurl')).toBe(false);
       expect(isLevelUnlocked(emptyProgress, 'level-05-ticket-rush')).toBe(false);
+      expect(isLevelUnlocked(emptyProgress, 'level-06-global-chat')).toBe(false);
     });
 
     it('returns correct requirement string for locked levels', () => {
@@ -57,6 +60,7 @@ describe('S-017 Campaign Level Unlocking Progression & Reset Unit Tests', () => 
       expect(getUnlockRequirementText('level-03-flash-deals')).toBe('Cần 1★ ở Màn 2');
       expect(getUnlockRequirementText('level-04-tinyurl')).toBe('Cần 1★ ở Màn 3');
       expect(getUnlockRequirementText('level-05-ticket-rush')).toBe('Cần 1★ ở Màn 4');
+      expect(getUnlockRequirementText('level-06-global-chat')).toBe('Cần 1★ ở Màn 5');
     });
 
     it('automatically unlocks next level when saving a level with >= 1 star', () => {
