@@ -22,6 +22,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 16 | [S-016: Chế Độ Sandbox Tự Do & Lưu Trữ Tiến Trình Chơi (LocalStorage Star Tracking)](../stories/S-016-sandbox-mode-progress-persistence/story.md) | Done | 🟢 Low | Sprint 07 |
 | 17 | [S-017: Hệ Thống Mở Khóa Màn Chơi Theo Tiến Trình & Quản Lý Dữ Liệu Chơi (Campaign Level Unlocking Progression & Reset)](../stories/S-017-campaign-level-unlocking-progression/story.md) | Done | 🟢 Low | Sprint 08 |
 | 18 | [S-018: Xuất, Nhập & Chia Sẻ Bản Vẽ Kiến Trúc (Architecture Blueprint Export, Import & Shareable Link)](../stories/S-018-architecture-blueprint-export-import-share/story.md) | Done | 🟢 Low | Sprint 08 |
+| 19 | [S-019: Tối Ưu Bố Cục TopBar & Chống Tràn Giao Diện (TopBar Responsive Layout & Action Consolidation)](../stories/S-019-topbar-responsive-layout-consolidation/story.md) | Done | 🟢 Low | Sprint 08 |
 
 
 

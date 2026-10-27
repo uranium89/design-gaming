@@ -106,7 +106,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             aria-label="Xem đề bài"
             title="Xem đề bài và ràng buộc mục tiêu"
           >
-            <BookOpen size={14} /> Đề bài
+            <BookOpen size={14} /> <span className={styles.btnText}>Đề bài</span>
           </button>
         )}
         {onOpenBlueprint && (
@@ -116,12 +116,12 @@ export const TopBar: React.FC<TopBarProps> = ({
             aria-label="Bản vẽ kiến trúc và chia sẻ"
             title="Xuất, nhập và chia sẻ bản vẽ kiến trúc"
           >
-            <Share2 size={14} /> Bản vẽ
+            <Share2 size={14} /> <span className={styles.btnText}>Bản vẽ</span>
           </button>
         )}
         {onResetProgress && (
           <button
-            className={styles.ghostBtn}
+            className={styles.iconBtn}
             onClick={() => {
               if (
                 window.confirm(
@@ -134,7 +134,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             aria-label="Đặt lại tiến trình chơi"
             title="Đặt lại toàn bộ tiến trình và thành tích"
           >
-            <RotateCcw size={13} /> Đặt lại
+            <RotateCcw size={13} />
           </button>
         )}
       </div>
@@ -255,7 +255,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             aria-label="Chấm điểm kiến trúc"
             title="Đánh giá kiến trúc và nhận sao"
           >
-            <Trophy size={14} /> Chấm điểm
+            <Trophy size={14} /> <span className={styles.btnText}>Chấm điểm</span>
           </button>
         )}
       </div>
