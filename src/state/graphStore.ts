@@ -10,6 +10,7 @@ import {
   OnConnect,
 } from '@xyflow/react';
 import { CloudProvider } from '../types';
+import { audioService } from '../services/audioService';
 
 export interface NodeData extends Record<string, unknown> {
   name: string;
@@ -87,6 +88,7 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   },
 
   onConnect: (connection) => {
+    audioService.playCableConnect();
     set({
       edges: addEdge(
         {
@@ -98,7 +100,12 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
     });
   },
 
-  setSimulationRunning: (running) => set({ isSimulationRunning: running }),
+  setSimulationRunning: (running) => {
+    if (running) {
+      audioService.playSimulationStart();
+    }
+    set({ isSimulationRunning: running });
+  },
   setSimulationSpeed: (speed) => set({ simulationSpeed: speed }),
 
   addNode: (node) => {

@@ -24,7 +24,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 18 | [S-018: Xuất, Nhập & Chia Sẻ Bản Vẽ Kiến Trúc (Architecture Blueprint Export, Import & Shareable Link)](../stories/S-018-architecture-blueprint-export-import-share/story.md) | Done | 🟢 Low | Sprint 08 |
 | 19 | [S-019: Tối Ưu Bố Cục TopBar & Chống Tràn Giao Diện (TopBar Responsive Layout & Action Consolidation)](../stories/S-019-topbar-responsive-layout-consolidation/story.md) | Done | 🟢 Low | Sprint 08 |
 | 20 | [S-020: Khắc Phục Lỗi Mở Khóa Màn Chơi Chặt Chẽ (Strict Sequential Level Unlocking & Stale Progress Invalidation)](../stories/S-020-strict-sequential-level-unlocking/story.md) | Done | 🟢 Low | Sprint 08 |
-| 21 | [S-021: Hệ Thống Âm Thanh Phản Hồi Web Audio Synth & Nút Bật/Tắt Âm Thanh (Web Audio FX & Mute Control)](../stories/S-021-web-audio-synth-sound-effects/story.md) | Ready | 🟢 Low | Sprint 09 |
+| 21 | [S-021: Hệ Thống Âm Thanh Phản Hồi Web Audio Synth & Nút Bật/Tắt Âm Thanh (Web Audio FX & Mute Control)](../stories/S-021-web-audio-synth-sound-effects/story.md) | Done | 🟢 Low | Sprint 09 |
 | 22 | [S-022: Giao Diện Xem Trước Bản Vẽ Kiến Trúc Trước Khi Nạp (Blueprint Preview Modal & Overwrite Safety)](../stories/S-022-blueprint-preview-overwrite-safety/story.md) | Ready | 🟢 Low | Sprint 09 |
 | 23 | [S-023: Màn 6 - Ứng Dụng Nhắn Tin Trực Tuyến Toàn Cầu (Level 06: Global Chat App - WebSockets & Redis Pub/Sub)](../stories/S-023-level-06-global-chat-app/story.md) | Ready | 🟡 Med | Sprint 09 |
 

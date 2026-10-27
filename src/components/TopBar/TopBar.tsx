@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders, RotateCcw, Share2 } from 'lucide-react';
+import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders, RotateCcw, Share2, Volume2, VolumeX } from 'lucide-react';
 import styles from './TopBar.module.css';
 import { LiveMetrics, SimulationState } from '../../types';
 import { LevelDefinition } from '../../levels/level01';
@@ -10,6 +10,7 @@ import {
   isLevelUnlocked,
   getUnlockRequirementText,
 } from '../../services/progressStorage';
+import { audioService } from '../../services/audioService';
 
 interface TopBarProps {
   metrics: LiveMetrics;
@@ -57,6 +58,12 @@ export const TopBar: React.FC<TopBarProps> = ({
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
   const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+  const [isMuted, setIsMuted] = React.useState(() => audioService.isMuted());
+
+  React.useEffect(() => {
+    return audioService.onMuteChange((muted) => setIsMuted(muted));
+  }, []);
 
   return (
     <header className={styles.topBar}>
@@ -137,6 +144,14 @@ export const TopBar: React.FC<TopBarProps> = ({
             <RotateCcw size={13} />
           </button>
         )}
+        <button
+          className={styles.iconBtn}
+          onClick={() => audioService.toggleMute()}
+          aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+          title={isMuted ? 'Âm thanh: Đang tắt (Nhấn để bật)' : 'Âm thanh: Đang bật (Nhấn để tắt)'}
+        >
+          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} style={{ color: '#38bdf8' }} />}
+        </button>
       </div>
 
       <div className={styles.centerSection}>

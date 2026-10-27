@@ -11,6 +11,7 @@ import { ALL_LEVELS, LEVEL_01, LevelDefinition } from './levels';
 import { calculateScore, ScoreBreakdown } from './simulation/scoring';
 import { loadProgress, saveLevelProgress, isLevelUnlocked, resetProgress } from './services/progressStorage';
 import { decodeBlueprintFromHash, ArchitectureBlueprint } from './services/blueprintService';
+import { audioService } from './services/audioService';
 import './styles/global.css';
 
 export function App() {
@@ -53,6 +54,13 @@ export function App() {
       }
     }
   }, [loadArchitecture, resetSimulation]);
+
+  // Audio overload alert during simulation if high error rate occurs
+  useEffect(() => {
+    if (simulation.isRunning && metrics.errorRate > 0.05) {
+      audioService.playNodeOverload();
+    }
+  }, [simulation.isRunning, metrics.errorRate]);
 
   const handleImportBlueprint = useCallback(
     (blueprint: ArchitectureBlueprint) => {
@@ -141,6 +149,9 @@ export function App() {
 
     setCurrentScore(score);
     setIsScoreOpen(true);
+    if (score.stars >= 1) {
+      audioService.playVictoryFanfare(score.stars);
+    }
     if (currentLevel.id !== 'sandbox') {
       const updated = saveLevelProgress(currentLevel.id, score.stars, score.totalScore);
       setProgress(updated);
