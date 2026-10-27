@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders, RotateCcw } from 'lucide-react';
+import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders, RotateCcw, Share2 } from 'lucide-react';
 import styles from './TopBar.module.css';
 import { LiveMetrics, SimulationState } from '../../types';
 import { LevelDefinition } from '../../levels/level01';
@@ -23,6 +23,7 @@ interface TopBarProps {
   onSetSandboxWriteRatio?: (ratio: number) => void;
   onSelectLevel?: (levelId: string) => void;
   onResetProgress?: () => void;
+  onOpenBlueprint?: () => void;
   onToggleSimulation: () => void;
   onSetSpeed: (speed: 1 | 2 | 5) => void;
   onOpenBriefing?: () => void;
@@ -42,6 +43,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onSetSandboxWriteRatio,
   onSelectLevel,
   onResetProgress,
+  onOpenBlueprint,
   onToggleSimulation,
   onSetSpeed,
   onOpenBriefing,
@@ -105,6 +107,16 @@ export const TopBar: React.FC<TopBarProps> = ({
             title="Xem đề bài và ràng buộc mục tiêu"
           >
             <BookOpen size={14} /> Đề bài
+          </button>
+        )}
+        {onOpenBlueprint && (
+          <button
+            className={styles.ghostBtn}
+            onClick={onOpenBlueprint}
+            aria-label="Bản vẽ kiến trúc và chia sẻ"
+            title="Xuất, nhập và chia sẻ bản vẽ kiến trúc"
+          >
+            <Share2 size={14} /> Bản vẽ
           </button>
         )}
         {onResetProgress && (

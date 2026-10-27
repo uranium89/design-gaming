@@ -1,14 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { TopBar } from './components/TopBar/TopBar';
 import { SidebarDock } from './components/SidebarDock/SidebarDock';
 import { CanvasArea } from './components/CanvasArea/CanvasArea';
 import { BriefingModal } from './components/BriefingModal/BriefingModal';
 import { ScoreModal } from './components/ScoreModal/ScoreModal';
+import { BlueprintModal } from './components/BlueprintModal/BlueprintModal';
 import { useSimulation } from './simulation/useSimulation';
 import { useGraphStore } from './state/graphStore';
 import { ALL_LEVELS, LEVEL_01, LevelDefinition } from './levels';
 import { calculateScore, ScoreBreakdown } from './simulation/scoring';
 import { loadProgress, saveLevelProgress, isLevelUnlocked, resetProgress } from './services/progressStorage';
+import { decodeBlueprintFromHash, ArchitectureBlueprint } from './services/blueprintService';
 import './styles/global.css';
 
 export function App() {
@@ -26,10 +28,45 @@ export function App() {
     useSimulation(currentLevel, customParams);
 
   const loadArchitecture = useGraphStore((state) => state.loadArchitecture);
+  const nodes = useGraphStore((state) => state.nodes);
+  const edges = useGraphStore((state) => state.edges);
 
   const [isBriefingOpen, setIsBriefingOpen] = useState(true);
   const [isScoreOpen, setIsScoreOpen] = useState(false);
+  const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [currentScore, setCurrentScore] = useState<ScoreBreakdown | null>(null);
+
+  // Check URL hash for shared blueprint on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('#blueprint=')) {
+      const res = decodeBlueprintFromHash(window.location.hash);
+      if (res.success && res.blueprint) {
+        resetSimulation();
+        loadArchitecture(res.blueprint.nodes, res.blueprint.edges);
+        if (res.blueprint.levelId) {
+          const target = ALL_LEVELS.find((l) => l.id === res.blueprint!.levelId);
+          if (target) {
+            setCurrentLevel(target);
+          }
+        }
+        setIsBriefingOpen(false);
+      }
+    }
+  }, [loadArchitecture, resetSimulation]);
+
+  const handleImportBlueprint = useCallback(
+    (blueprint: ArchitectureBlueprint) => {
+      resetSimulation();
+      loadArchitecture(blueprint.nodes, blueprint.edges);
+      if (blueprint.levelId) {
+        const target = ALL_LEVELS.find((l) => l.id === blueprint.levelId);
+        if (target) {
+          setCurrentLevel(target);
+        }
+      }
+    },
+    [loadArchitecture, resetSimulation]
+  );
 
   const handleSelectLevel = useCallback(
     (levelId: string) => {
@@ -136,6 +173,7 @@ export function App() {
         onSetSandboxWriteRatio={setSandboxWriteRatio}
         onSelectLevel={handleSelectLevel}
         onResetProgress={handleResetProgress}
+        onOpenBlueprint={() => setIsBlueprintOpen(true)}
         onToggleSimulation={toggleSimulation}
         onSetSpeed={setSpeed}
         onOpenBriefing={() => setIsBriefingOpen(true)}
@@ -152,6 +190,15 @@ export function App() {
         level={currentLevel}
         onClose={() => setIsBriefingOpen(false)}
         onStartDesign={() => setIsBriefingOpen(false)}
+      />
+
+      <BlueprintModal
+        isOpen={isBlueprintOpen}
+        onClose={() => setIsBlueprintOpen(false)}
+        levelId={currentLevel.id}
+        nodes={nodes}
+        edges={edges}
+        onImportBlueprint={handleImportBlueprint}
       />
 
       {currentScore && (
