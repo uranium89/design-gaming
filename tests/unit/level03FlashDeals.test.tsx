@@ -117,7 +117,7 @@ describe('S-010 Level 03 Flash Deals Fashion Simulation', () => {
     );
 
     const select = screen.getByRole('combobox', { name: /Chọn màn chơi/i });
-    expect(screen.getByText('Level 3: Flash Deals')).toBeInTheDocument();
+    expect(screen.getByText(/Level 3: Flash Deals/i)).toBeInTheDocument();
 
     fireEvent.change(select, { target: { value: 'level-03-flash-deals' } });
     expect(handleSelectLevel).toHaveBeenCalledWith('level-03-flash-deals');

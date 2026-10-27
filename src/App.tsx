@@ -8,7 +8,7 @@ import { useSimulation } from './simulation/useSimulation';
 import { useGraphStore } from './state/graphStore';
 import { ALL_LEVELS, LEVEL_01, LevelDefinition } from './levels';
 import { calculateScore, ScoreBreakdown } from './simulation/scoring';
-import { loadProgress, saveLevelProgress } from './services/progressStorage';
+import { loadProgress, saveLevelProgress, isLevelUnlocked, resetProgress } from './services/progressStorage';
 import './styles/global.css';
 
 export function App() {
@@ -33,6 +33,7 @@ export function App() {
 
   const handleSelectLevel = useCallback(
     (levelId: string) => {
+      if (!isLevelUnlocked(progress, levelId)) return;
       const selected = ALL_LEVELS.find((l) => l.id === levelId);
       if (selected && selected.id !== currentLevel.id) {
         resetSimulation();
@@ -41,8 +42,17 @@ export function App() {
         setIsBriefingOpen(true);
       }
     },
-    [currentLevel.id, loadArchitecture, resetSimulation]
+    [currentLevel.id, loadArchitecture, progress, resetSimulation]
   );
+
+  const handleResetProgress = useCallback(() => {
+    const fresh = resetProgress();
+    setProgress(fresh);
+    resetSimulation();
+    setCurrentLevel(LEVEL_01);
+    loadArchitecture(LEVEL_01.initialNodes, LEVEL_01.initialEdges);
+    setIsBriefingOpen(true);
+  }, [loadArchitecture, resetSimulation]);
 
   const handleOpenScore = () => {
     const nodes = useGraphStore.getState().nodes;
@@ -125,6 +135,7 @@ export function App() {
         onSetSandboxTrafficRps={setSandboxRps}
         onSetSandboxWriteRatio={setSandboxWriteRatio}
         onSelectLevel={handleSelectLevel}
+        onResetProgress={handleResetProgress}
         onToggleSimulation={toggleSimulation}
         onSetSpeed={setSpeed}
         onOpenBriefing={() => setIsBriefingOpen(true)}

@@ -20,7 +20,7 @@ Ordered by priority, highest first. Maintained by the product-owner.
 | 14 | [S-014: Màn 5 - Săn Vé Concert Black Friday (Level 05: Concert Ticket Rush)](../stories/S-014-level-05-concert-ticket-rush/story.md) | Done | 🟢 Low | Sprint 06 |
 | 15 | [S-015: Hệ Thống 4 Đế Chế Đám Mây (Cloud Empires: Freestyle, AWS, Azure, GCP) & Kho Linh Kiện Nhà Cung Cấp](../stories/S-015-cloud-empires-component-catalogs/story.md) | Done | 🟡 Med | Sprint 07 |
 | 16 | [S-016: Chế Độ Sandbox Tự Do & Lưu Trữ Tiến Trình Chơi (LocalStorage Star Tracking)](../stories/S-016-sandbox-mode-progress-persistence/story.md) | Done | 🟢 Low | Sprint 07 |
-| 17 | [S-017: Hệ Thống Mở Khóa Màn Chơi Theo Tiến Trình & Quản Lý Dữ Liệu Chơi (Campaign Level Unlocking Progression & Reset)](../stories/S-017-campaign-level-unlocking-progression/story.md) | Ready | 🟢 Low | Sprint 08 |
+| 17 | [S-017: Hệ Thống Mở Khóa Màn Chơi Theo Tiến Trình & Quản Lý Dữ Liệu Chơi (Campaign Level Unlocking Progression & Reset)](../stories/S-017-campaign-level-unlocking-progression/story.md) | Done | 🟢 Low | Sprint 08 |
 | 18 | [S-018: Xuất, Nhập & Chia Sẻ Bản Vẽ Kiến Trúc (Architecture Blueprint Export, Import & Shareable Link)](../stories/S-018-architecture-blueprint-export-import-share/story.md) | Ready | 🟢 Low | Sprint 08 |
 
 

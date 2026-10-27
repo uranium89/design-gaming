@@ -10,6 +10,64 @@ export type GameProgress = Record<string, LevelProgress>;
 
 export const PROGRESS_STORAGE_KEY = 'sysarchitect_progress_v1';
 
+export const CAMPAIGN_LEVEL_SEQUENCE = [
+  'level-01-bakery',
+  'level-02-tech-news',
+  'level-03-flash-deals',
+  'level-04-tinyurl',
+  'level-05-ticket-rush',
+] as const;
+
+/**
+ * Returns the next level in the campaign sequence, or null if on the last level or sandbox.
+ */
+export function getNextLevelId(levelId: string): string | null {
+  const index = CAMPAIGN_LEVEL_SEQUENCE.indexOf(levelId as (typeof CAMPAIGN_LEVEL_SEQUENCE)[number]);
+  if (index >= 0 && index < CAMPAIGN_LEVEL_SEQUENCE.length - 1) {
+    return CAMPAIGN_LEVEL_SEQUENCE[index + 1];
+  }
+  return null;
+}
+
+/**
+ * Checks whether a level is unlocked.
+ * - 'level-01-bakery' and 'sandbox' are always unlocked.
+ * - Other campaign levels are unlocked if explicitly marked unlocked OR if the preceding level has at least 1 star.
+ */
+export function isLevelUnlocked(progress: GameProgress, levelId: string): boolean {
+  if (levelId === 'sandbox' || levelId === 'level-01-bakery') {
+    return true;
+  }
+
+  // Check if explicitly unlocked in saved progress
+  if (progress[levelId]?.unlocked) {
+    return true;
+  }
+
+  // Check previous level in sequence for backwards compatibility
+  const index = CAMPAIGN_LEVEL_SEQUENCE.indexOf(levelId as (typeof CAMPAIGN_LEVEL_SEQUENCE)[number]);
+  if (index > 0) {
+    const prevLevelId = CAMPAIGN_LEVEL_SEQUENCE[index - 1];
+    const prevProgress = progress[prevLevelId];
+    if (prevProgress && (prevProgress.stars >= 1 || prevProgress.passed)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Returns human-readable unlocking requirements text for locked levels.
+ */
+export function getUnlockRequirementText(levelId: string): string {
+  const index = CAMPAIGN_LEVEL_SEQUENCE.indexOf(levelId as (typeof CAMPAIGN_LEVEL_SEQUENCE)[number]);
+  if (index > 0) {
+    return `Cần 1★ ở Màn ${index}`;
+  }
+  return '';
+}
+
 /**
  * Loads game progress from browser localStorage.
  * Automatically recovers from missing or corrupted data.
@@ -49,7 +107,8 @@ export function loadProgress(): GameProgress {
 }
 
 /**
- * Saves level score and stars to localStorage if score or stars is higher than before.
+ * Saves level score and stars to localStorage.
+ * Automatically unlocks the subsequent level if at least 1 star was earned.
  */
 export function saveLevelProgress(
   levelId: string,
@@ -73,17 +132,58 @@ export function saveLevelProgress(
       unlocked: true,
       updatedAt: new Date().toISOString(),
     };
+  }
 
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(current));
-      } catch (err) {
-        console.warn('Failed to save progress to localStorage:', err);
+  // If player earned at least 1 star, unlock next level
+  if (safeStars >= 1) {
+    const nextLevelId = getNextLevelId(levelId);
+    if (nextLevelId) {
+      if (!current[nextLevelId]) {
+        current[nextLevelId] = {
+          stars: 0,
+          totalScore: 0,
+          passed: false,
+          unlocked: true,
+        };
+      } else {
+        current[nextLevelId].unlocked = true;
       }
     }
   }
 
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(current));
+    } catch (err) {
+      console.warn('Failed to save progress to localStorage:', err);
+    }
+  }
+
   return current;
+}
+
+/**
+ * Resets all progress and locks all levels except Level 1 and Sandbox.
+ */
+export function resetProgress(): GameProgress {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.removeItem(PROGRESS_STORAGE_KEY);
+    } catch (err) {
+      console.warn('Failed to reset progress from localStorage:', err);
+    }
+  }
+
+  const initialProgress: GameProgress = {
+    'level-01-bakery': {
+      stars: 0,
+      totalScore: 0,
+      passed: false,
+      unlocked: true,
+    },
+  };
+
+  return initialProgress;
 }
 
 /**

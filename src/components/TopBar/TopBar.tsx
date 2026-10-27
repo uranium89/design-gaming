@@ -1,9 +1,15 @@
 import React from 'react';
-import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders } from 'lucide-react';
+import { Play, Pause, Server, Zap, BookOpen, Trophy, Flame, Sliders, RotateCcw } from 'lucide-react';
 import styles from './TopBar.module.css';
 import { LiveMetrics, SimulationState } from '../../types';
 import { LevelDefinition } from '../../levels/level01';
-import { loadProgress, renderStarString, GameProgress } from '../../services/progressStorage';
+import {
+  loadProgress,
+  renderStarString,
+  GameProgress,
+  isLevelUnlocked,
+  getUnlockRequirementText,
+} from '../../services/progressStorage';
 
 interface TopBarProps {
   metrics: LiveMetrics;
@@ -16,6 +22,7 @@ interface TopBarProps {
   onSetSandboxTrafficRps?: (rps: number) => void;
   onSetSandboxWriteRatio?: (ratio: number) => void;
   onSelectLevel?: (levelId: string) => void;
+  onResetProgress?: () => void;
   onToggleSimulation: () => void;
   onSetSpeed: (speed: 1 | 2 | 5) => void;
   onOpenBriefing?: () => void;
@@ -34,6 +41,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onSetSandboxTrafficRps,
   onSetSandboxWriteRatio,
   onSelectLevel,
+  onResetProgress,
   onToggleSimulation,
   onSetSpeed,
   onOpenBriefing,
@@ -66,10 +74,17 @@ export const TopBar: React.FC<TopBarProps> = ({
             >
               {levels.map((lvl) => {
                 const stars = currentProgress[lvl.id]?.stars || 0;
+                const unlocked = isLevelUnlocked(currentProgress, lvl.id);
                 const starStr = renderStarString(stars);
-                const displayTitle = starStr ? `${lvl.badge} ${starStr}` : lvl.badge;
+                let displayTitle = starStr ? `${lvl.badge} ${starStr}` : lvl.badge;
+
+                if (!unlocked) {
+                  const reqText = getUnlockRequirementText(lvl.id);
+                  displayTitle = `🔒 ${lvl.badge} (${reqText})`;
+                }
+
                 return (
-                  <option key={lvl.id} value={lvl.id}>
+                  <option key={lvl.id} value={lvl.id} disabled={!unlocked}>
                     {displayTitle}
                   </option>
                 );
@@ -90,6 +105,24 @@ export const TopBar: React.FC<TopBarProps> = ({
             title="Xem đề bài và ràng buộc mục tiêu"
           >
             <BookOpen size={14} /> Đề bài
+          </button>
+        )}
+        {onResetProgress && (
+          <button
+            className={styles.ghostBtn}
+            onClick={() => {
+              if (
+                window.confirm(
+                  'Bạn có chắc chắn muốn đặt lại toàn bộ sao và khóa các màn chơi về trạng thái ban đầu không?'
+                )
+              ) {
+                onResetProgress();
+              }
+            }}
+            aria-label="Đặt lại tiến trình chơi"
+            title="Đặt lại toàn bộ tiến trình và thành tích"
+          >
+            <RotateCcw size={13} /> Đặt lại
           </button>
         )}
       </div>

@@ -170,8 +170,8 @@ describe('S-008 Redis Cache & Level 2 Simulation', () => {
     // Verify level dropdown is present
     const select = screen.getByRole('combobox', { name: /Chọn màn chơi/i });
     expect(select).toBeInTheDocument();
-    expect(screen.getByText('Level 1: The Bakery')).toBeInTheDocument();
-    expect(screen.getByText('Level 2: Tech News')).toBeInTheDocument();
+    expect(screen.getByText(/Level 1: The Bakery/i)).toBeInTheDocument();
+    expect(screen.getByText(/Level 2: Tech News/i)).toBeInTheDocument();
 
     // Select Level 2
     fireEvent.change(select, { target: { value: 'level-02-tech-news' } });
