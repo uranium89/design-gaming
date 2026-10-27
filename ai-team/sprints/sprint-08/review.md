@@ -17,6 +17,11 @@ Toàn bộ mục tiêu Sprint 08 đã hoàn thành xuất sắc 100%. Game đã 
    - Rút gọn nút Reset thành icon button tinh gọn (`RotateCcw`), co giãn nhãn text theo độ rộng màn hình.
    - Giới hạn chiều rộng menu chọn màn chơi (175px ellipsis), tiết kiệm hơn 470px chiều ngang.
 
+4. **Khắc Phục Lỗi Mở Khóa Màn Chơi Chặt Chẽ (Strict Sequential Level Unlocking - S-020)**:
+   - Khắc phục triệt để lỗi người chơi có thể vào Màn 5 mà không cần mở khóa tuần tự.
+   - Loại bỏ cơ chế chấp nhận cờ `unlocked: true` độc lập từ dữ liệu cache cũ; bắt buộc toàn bộ chuỗi màn tiền nhiệm từ 1 đến 4 phải đạt tối thiểu 1 sao mới được mở Màn 5.
+   - Tự động lọc và làm sạch (sanitize) dữ liệu cũ trong `localStorage` ngay khi ứng dụng khởi chạy.
+
 ---
 
 ## 2. What You Can Try Now (Trải Nghiệm Thực Tế)
@@ -43,7 +48,7 @@ Toàn bộ mục tiêu Sprint 08 đã hoàn thành xuất sắc 100%. Game đã 
 ---
 
 ## 3. Not Finished
-- Không có story nào bị trễ hoặc tồn đọng. Cả 3 stories S-017, S-018 và S-019 đều đã hoàn thành và vượt qua 100% Quality Gates.
+- Không có story nào bị trễ hoặc tồn đọng. Cả 4 stories S-017, S-018, S-019 và S-020 đều đã hoàn thành và vượt qua 100% Quality Gates.
 
 ---
 
@@ -61,8 +66,8 @@ Toàn bộ mục tiêu Sprint 08 đã hoàn thành xuất sắc 100%. Game đã 
 ---
 
 ## 6. Metrics
-- **Stories Done**: 3 / 3 (100% hoàn thành).
+- **Stories Done**: 4 / 4 (100% hoàn thành).
 - **Average Review Loops**: 1.0 loop/story.
 - **Security Findings Blocked**: 0 (Tất cả quét SAST, gitleaks, audit đều PASS).
-- **Test Suite Coverage**: 18 test suites, **97 tests pass 100%**.
-- **Production Build Time**: 188ms.
+- **Test Suite Coverage**: 18 test suites, **99 tests pass 100%**.
+- **Production Build Time**: 163ms.
