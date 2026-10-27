@@ -12,19 +12,28 @@ Toàn bộ mục tiêu Sprint 08 đã hoàn thành xuất sắc 100%. Game đã 
    - Hỗ trợ nhập file JSON bản vẽ với lớp xác thực và lọc mã độc (XSS & prototype pollution) nghiêm ngặt.
    - Nút "Sao chép liên kết" nén bản vẽ vào URL hash (`#blueprint=...`), cho phép chia sẻ thiết kế hệ thống qua link web và tự động khôi phục bản vẽ khi mở link.
 
+3. **Tối Ưu Bố Cục TopBar & Chống Tràn Giao Diện (TopBar Responsive Layout)**:
+   - Khắc phục triệt để hiện tượng tràn thanh điều hướng (overflow).
+   - Rút gọn nút Reset thành icon button tinh gọn (`RotateCcw`), co giãn nhãn text theo độ rộng màn hình.
+   - Giới hạn chiều rộng menu chọn màn chơi (175px ellipsis), tiết kiệm hơn 470px chiều ngang.
+
 ---
 
 ## 2. What You Can Try Now (Trải Nghiệm Thực Tế)
 1. **Khởi chạy ứng dụng**:
    - Chạy `npm run dev` trên terminal và mở `http://localhost:5173/`.
-2. **Trải nghiệm Chiến dịch Mở khóa Màn chơi**:
+2. **Quan sát thanh Navigation TopBar siêu gọn gàng**:
+   - Mở trên màn hình laptop 1366px - 1440px: Không còn bất kỳ hiện tượng tràn hoặc lệch nút nào.
+   - Nút "Đặt lại" chuyển thành nút biểu tượng tròn tinh tế cạnh "Bản vẽ".
+   - Thử thu nhỏ cửa sổ trình duyệt: Nhãn văn bản tự động ẩn mượt mà, chỉ giữ lại các icon sắc nét kèm tooltip hướng dẫn.
+3. **Trải nghiệm Chiến dịch Mở khóa Màn chơi**:
    - Bấm vào menu chọn màn chơi trên TopBar:
      - Quan sát Màn 1 (`Level 1: The Bakery`) và `Sandbox Mode` mở sẵn.
      - Các màn từ 2 đến 5 hiển thị ổ khóa `🔒` kèm điều kiện mở khóa (ví dụ: `🔒 Level 2: Tech News (Cần 1★ ở Màn 1)`).
      - Thử chọn màn bị khóa: Trình duyệt ngăn không cho chọn màn bị khóa.
    - Hoàn thành thiết kế Màn 1, bấm **Chấm điểm** để đạt từ 1★ đến 3★ -> Mở lại dropdown, Màn 2 đã được tự động mở khóa ngay lập tức!
    - Bấm nút **"Đặt lại"** (icon 🔄) trên TopBar -> Xác nhận đặt lại -> Toàn bộ tiến trình được xóa sạch và đưa về Màn 1.
-3. **Trải nghiệm Xuất, Nhập & Chia sẻ Bản vẽ (Blueprint Modal)**:
+4. **Trải nghiệm Xuất, Nhập & Chia sẻ Bản vẽ (Blueprint Modal)**:
    - Trên thanh TopBar, bấm nút **"Bản vẽ"** (icon 🔗 `Share2` cạnh nút "Đề bài").
    - Hộp thoại Bản Vẽ Kiến Trúc hiện lên với 3 chức năng:
      - **Sao chép liên kết chia sẻ**: Bấm nút "Sao chép" -> Nút chuyển sang "Đã chép! ✓" màu xanh lá. Dán đường link này sang một tab trình duyệt khác để thấy toàn bộ hệ thống được khôi phục ngay lập tức!
@@ -34,7 +43,7 @@ Toàn bộ mục tiêu Sprint 08 đã hoàn thành xuất sắc 100%. Game đã 
 ---
 
 ## 3. Not Finished
-- Không có story nào bị trễ hoặc tồn đọng. Cả 2 stories S-017 và S-018 đều đã hoàn thành và vượt qua 100% Quality Gates.
+- Không có story nào bị trễ hoặc tồn đọng. Cả 3 stories S-017, S-018 và S-019 đều đã hoàn thành và vượt qua 100% Quality Gates.
 
 ---
 
@@ -52,8 +61,8 @@ Toàn bộ mục tiêu Sprint 08 đã hoàn thành xuất sắc 100%. Game đã 
 ---
 
 ## 6. Metrics
-- **Stories Done**: 2 / 2 (100% hoàn thành).
+- **Stories Done**: 3 / 3 (100% hoàn thành).
 - **Average Review Loops**: 1.0 loop/story.
 - **Security Findings Blocked**: 0 (Tất cả quét SAST, gitleaks, audit đều PASS).
-- **Test Suite Coverage**: 17 test suites, **96 tests pass 100%**.
-- **Production Build Time**: 155ms.
+- **Test Suite Coverage**: 18 test suites, **97 tests pass 100%**.
+- **Production Build Time**: 188ms.
